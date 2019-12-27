@@ -64,11 +64,21 @@ namespace SweepLine
 	            Point2 _pIL = BufferedList[(i + _bufLen - 1)% _bufLen];
 	            Point2 _pIR = BufferedList[(i + 1) % _bufLen];
 	            Vector2 _pIV = _pI.getValue();
-	            Vector2 _toLV = _pIL.getValue() - _pIV;
-	            Vector2 _toRV = _pIR.getValue() - _pIV;
-				//判断事件
+	            Vector2 _toN0 = _pIL.getValue() - _pIV;
+	            Vector2 _toN1 = _pIR.getValue() - _pIV;
+	            if(_toN0.x > 0 && _toN1.x > 0)		//起始影响点(增双边)
+				{
 
-            }
+				}
+				else if(_toN0.x < 0 && _toN1.x < 0) //终结影响点(减双边)
+				{
+
+				}
+				else //转折影响点(增单边)
+				{
+					
+				}
+			}
 
 			return false;
 
