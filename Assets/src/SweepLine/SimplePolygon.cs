@@ -35,53 +35,12 @@ namespace SweepLine
 
             return _contains;
         }
-        protected static List<Point2> BufferedList = new List<Point2>();
+
         // protected static Dictionary<Point2, SimplePolygon> BufferedTable = new Dictionary<Point2, SimplePolygon>();
-        public bool ContainsPoint(Vector2 _point)
+		protected SweepLine m_sweepLine=new SweepLine();
+		public bool ContainsPoint(Vector2 _point)
         {
-            BufferedList.Clear();
-            int len = m_points.Count;
-            for (int i = 0; i < len; i++)
-            {
-                BufferedList.Add(m_points[i]);
-                // BufferedTable.Add(m_points[i], this);
-            }
-            Point2 _pointTarget = new Point2(_point);
-            BufferedList.Add(_pointTarget);
-            // BufferedTable.Add(_pointTarget, this);
-            BufferedList.Sort();
-            string _polygonInfor = "-----sorted points-----\n";
-            foreach (var item in BufferedList)
-            {
-	            _polygonInfor+=item.ToString()+",";
-            }
-            Debug.Log(_polygonInfor);
-
-            int _bufLen = BufferedList.Count;
-            for (int i = 0; i < _bufLen; i++)
-            {
-	            Point2 _pI = BufferedList[i];
-	            Point2 _pIL = BufferedList[(i + _bufLen - 1)% _bufLen];
-	            Point2 _pIR = BufferedList[(i + 1) % _bufLen];
-	            Vector2 _pIV = _pI.getValue();
-	            Vector2 _toN0 = _pIL.getValue() - _pIV;
-	            Vector2 _toN1 = _pIR.getValue() - _pIV;
-	            if(_toN0.x > 0 && _toN1.x > 0)		//起始影响点(增双边)
-				{
-
-				}
-				else if(_toN0.x < 0 && _toN1.x < 0) //终结影响点(减双边)
-				{
-
-				}
-				else //转折影响点(增单边)
-				{
-					
-				}
-			}
-
-			return false;
-
+           return m_sweepLine.ContainsPoint(m_points, _point);
         }
     }
 }
