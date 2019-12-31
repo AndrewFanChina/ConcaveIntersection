@@ -19,9 +19,26 @@ namespace SweepLine
 
 	public struct SlopeRegion
 	{
-		public float m_y;
+		public Vector2 m_sitePos;
 		public float m_slop;
 		public InOut m_inOut;
+
+		public InOut InOutOf(Vector2 pos)
+		{
+			Debug.Assert(pos.x>= m_sitePos.x);
+			float _y = m_slop * pos.x;
+			InOut _result;
+			if (pos.y >= _y)
+			{
+				_result = m_inOut;
+			}
+			else
+			{
+				_result = m_inOut== InOut.Out? InOut.In: InOut.Out;
+			}
+			return _result;
+
+		}
 	}
 
 	public class SweepLine
@@ -61,7 +78,7 @@ namespace SweepLine
 				Vector2 _neighbor1 = _pIR.getValue() - _pIV;
 				if(_neighbor0.x > 0 && _neighbor1.x > 0)      //Open point,add double slope
 				{
-					var _beforeSign = GetSign(_pIV.y);
+					var _inOut = InOutOf(_pIV);
 					SlopeRegion _region =new SlopeRegion();
 					_region.m_y = _pIV.y;
 					_region.m_slop = SlopeOf(_neighbor0);
@@ -82,22 +99,23 @@ namespace SweepLine
 
 		}
 
-		private InOut GetSign(float y)
+		private InOut InOutOf(Vector2 _pos)
 		{
 			int _count = m_sweepLine.Count;
 			if(_count == 0)
 			{
 				return InOut.Out;
 			}
-			if(y < m_sweepLine[0].m_y)
-			{
-				return InOut.Out;
-			}
-			if(y >= m_sweepLine[_count-1].m_y)
-			{
-				return InOut.Out;
-			}
 
+			float y = _pos.y;
+			if(y < m_sweepLine[0].m_sitePos.y)
+			{
+				return InOut.Out;
+			}
+			if(y >= m_sweepLine[_count-1].m_sitePos.y)
+			{
+				return InOut.Out;
+			}
 
 			int _left = 0;
 			int _right = _count;
@@ -105,7 +123,7 @@ namespace SweepLine
 			int _id = _left;
 			while (_left < _center)
 			{
-				if(y < m_sweepLine[_center].m_y)
+				if(y <= m_sweepLine[_center].m_sitePos.y)
 				{
 					_id = _left;
 					_right = _center;
@@ -122,7 +140,7 @@ namespace SweepLine
 				}
 			}
 
-
+			return m_sweepLine[_id].InOutOf(_pos);
 		}
 
 		protected static float SlopeOf(Vector2 _vector2)
