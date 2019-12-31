@@ -19,13 +19,13 @@ namespace SweepLine
 
 	public struct SlopeRegion
 	{
-		public Vector2 m_sitePos;
+		public Point2 m_site;
 		public float m_slop;
 		public InOut m_inOut;
 
 		public InOut InOutOf(Vector2 pos)
 		{
-			Debug.Assert(pos.x>= m_sitePos.x);
+			Debug.Assert(pos.x>= m_site.x);
 			float _y = m_slop * pos.x;
 			InOut _result;
 			if (pos.y >= _y)
@@ -50,46 +50,52 @@ namespace SweepLine
 
 	public class SweepLine
 	{
-		protected static List<Point2> BufferedPoints = new List<Point2>();
-
-		protected List<SlopeRegion> m_sweepLine=new List<SlopeRegion>();
+		protected List<Point2> m_allPoints = new List<Point2>();
+		protected List<SlopeRegion> m_lineList=new List<SlopeRegion>();
+		//protected Dictionary<int,SlopeRegion> m_lineTable = new Dictionary<int, SlopeRegion>();
 		public bool ContainsPoint(IList<Point2> _polygon,Vector2 _point)
 		{
 			//Add polygon points
-			BufferedPoints.Clear();
+			m_allPoints.Clear();
+			m_lineList.Clear();
 			int len = _polygon.Count;
 			for(int i = 0; i < len; i++)
 			{
-				BufferedPoints.Add(_polygon[i]);
+				m_allPoints.Add(_polygon[i]);
+			}
+			for(int i = 0; i < len; i++)
+			{
+				_polygon[i].m_left = _polygon[(i - 1+ len)% len];
+				_polygon[i].m_right = _polygon[(i + 1) % len];
 			}
 			//Add the target point
 			Point2 _pointTarget = new Point2(_point);
-			BufferedPoints.Add(_pointTarget);
+			m_allPoints.Add(_pointTarget);
 			//sort from left to right
-			BufferedPoints.Sort();
+			m_allPoints.Sort();
 			string _polygonInfor = "-----sorted points-----\n";
-			foreach(var item in BufferedPoints)
+			foreach(var item in m_allPoints)
 			{
 				_polygonInfor += item.ToString() + ",";
 			}
 			Debug.Log(_polygonInfor);
 			//sweep from left to right
-			int _bufLen = BufferedPoints.Count;
+			int _bufLen = m_allPoints.Count;
 			for(int i = 0; i < _bufLen; i++)
 			{
-				Point2 _pI = BufferedPoints[i];
-				Point2 _pIL = BufferedPoints[(i + _bufLen - 1) % _bufLen];
-				Point2 _pIR = BufferedPoints[(i + 1) % _bufLen];
+				Point2 _pI = m_allPoints[i];
+				Point2 _pIL = m_allPoints[(i + _bufLen - 1) % _bufLen];
+				Point2 _pIR = m_allPoints[(i + 1) % _bufLen];
 				Vector2 _pIV = _pI.getValue();
-				Vector2 _neighbor0 = _pIL.getValue() - _pIV;
-				Vector2 _neighbor1 = _pIR.getValue() - _pIV;
-				if(_neighbor0.x > 0 && _neighbor1.x > 0)      //Open Site,add double slope
+				Vector2 _toLeft = _pIL.getValue() - _pIV;
+				Vector2 _toRight = _pIR.getValue() - _pIV;
+				if(_toLeft.x > 0 && _toRight.x > 0)      //Open Site,add double slope
 				{
-					OpenSite(_pIV, _neighbor0, _neighbor1);
+					OpenSite(_pI, _toLeft, _toRight);
 				}
-				else if(_neighbor0.x < 0 && _neighbor1.x < 0) //Close Site,remove double slopes
+				else if(_toLeft.x < 0 && _toRight.x < 0) //Close Site,remove double slopes
 				{
-					TurnSite(_pIV, _neighbor0, _neighbor1);
+					TurnSite(_pI, _toLeft, _toRight);
 				}
 				else //Turn Site,add single slope
 				{
@@ -101,71 +107,82 @@ namespace SweepLine
 
 		}
 
-		protected void OpenSite(Vector2 _sitePos, Vector2 _siteSlope1, Vector2 _siteSlope2)
+		protected void OpenSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
-			if (_siteSlope1.y < _siteSlope2.y)
+			if (_toLeft.y < _toRight.y)
 			{
-				var _temp = _siteSlope2;
-				_siteSlope2 = _siteSlope1;
-				_siteSlope1 = _temp;
+				var _temp = _toRight;
+				_toRight = _toLeft;
+				_toLeft = _temp;
 			}
 			int _regionID;
-			var _inOut =  InOutOf(_sitePos, out _regionID);
+			var _inOut =  InOutOf(_site.getValue(), out _regionID);
 			SlopeRegion _region1 = new SlopeRegion();
-			_region1.m_sitePos = _sitePos;
-			_region1.m_slop = SlopeOf(_siteSlope1);
+			_region1.m_site = _site;
+			_region1.m_slop = SlopeOf(_toLeft);
 			_region1.m_inOut = _inOut;
 
 			SlopeRegion _region2 = new SlopeRegion();
-			_region2.m_sitePos = _sitePos;
-			_region2.m_slop = SlopeOf(_siteSlope2);
+			_region2.m_site = _site;
+			_region2.m_slop = SlopeOf(_toRight);
 			_region2.m_inOut = SlopeRegion.Reverse(_inOut);
 
-			if (_regionID >= m_sweepLine.Count)
+			if (_regionID >= m_lineList.Count)
 			{
-				m_sweepLine.Add(_region1);
-				m_sweepLine.Add(_region2);
+				m_lineList.Add(_region1);
+				m_lineList.Add(_region2);
 			}
 			else
 			{
-				m_sweepLine.Insert(_regionID, _region2);
-				m_sweepLine.Insert(_regionID, _region1);
+				m_lineList.Insert(_regionID, _region2);
+				m_lineList.Insert(_regionID, _region1);
 			}
 
 		}
 
-		protected void TurnSite(Vector2 _sitePos, Vector2 _siteSlope1, Vector2 _siteSlope2)
+		protected void TurnSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
-			if(_siteSlope1.x > _siteSlope2.x)
+			Point2 _left, _right;
+			if(_toLeft.x > _toRight.x)
 			{
-				var _temp = _siteSlope2;
-				_siteSlope2 = _siteSlope1;
-				_siteSlope1 = _temp;
-			}
-
-			Vector2 _sitePosLeft = _sitePos + _siteSlope1;
-			_sitePosLeft.y += float.Epsilon;
-			int _regionID;
-
-			var _inOut = InOutOf(_sitePosLeft, out _regionID);
-			SlopeRegion _region = new SlopeRegion();
-			_region.m_sitePos = _sitePos;
-			_region.m_slop = SlopeOf(_siteSlope2);
-			_region.m_inOut = _inOut;
-
-			if(_regionID >= m_sweepLine.Count)
-			{
-				m_sweepLine.Add(_region);
+				var _temp = _toRight;
+				_toRight = _toLeft;
+				_toLeft = _temp;
+				_left = _site.m_right;
+				_right = _site.m_left;
 			}
 			else
 			{
-				m_sweepLine.Insert(_regionID, _region);
+				_left = _site.m_left;
+				_right = _site.m_right;
 			}
+
+			int _regionID=m_lineList.IndexOf(_left);
+
+			var _inOut = InOutOf(_sitePosLeft, out _regionID);
+			SlopeRegion _region = new SlopeRegion();
+			_region.m_site = _site;
+			_region.m_slop = SlopeOf(_toRight);
+			_region.m_inOut = _inOut;
+
+			if(_regionID >= m_lineList.Count)
+			{
+				m_lineList.Add(_region);
+			}
+			else
+			{
+				m_lineList.Insert(_regionID, _region);
+			}
+		}
+
+		protected SlopeRegion RegionOf(Point2 _pos, out int _regionID)
+		{
+
 		}
 
 		protected InOut InOutOf(Vector2 _pos, out int _regionID)
 		{
-			int _count = m_sweepLine.Count;
+			int _count = m_lineList.Count;
 			if(_count == 0)
 			{
 				_regionID = 0;
@@ -173,12 +190,12 @@ namespace SweepLine
 			}
 
 			float y = _pos.y;
-			if(y < m_sweepLine[0].m_sitePos.y)
+			if(y < m_lineList[0].m_site.y)
 			{
 				_regionID = 0;
 				return InOut.Out;
 			}
-			if(y >= m_sweepLine[_count-1].m_sitePos.y)
+			if(y >= m_lineList[_count-1].m_site.y)
 			{
 				_regionID = _count;
 				return InOut.Out;
@@ -190,7 +207,7 @@ namespace SweepLine
 			int _id = _left;
 			while (_left < _center)
 			{
-				if(y <= m_sweepLine[_center].m_sitePos.y)
+				if(y <= m_lineList[_center].m_site.y)
 				{
 					_id = _left;
 					_right = _center;
@@ -207,8 +224,9 @@ namespace SweepLine
 				}
 			}
 			_regionID = _id;
-			return m_sweepLine[_id].InOutOf(_pos);
+			return m_lineList[_id].InOutOf(_pos);
 		}
+
 		protected static float SlopeOf(Vector2 _vector2)
 		{
 			if(Mathf.Approximately(_vector2.x, 0))

@@ -1,25 +1,27 @@
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 namespace SweepLine
 {
-	public struct Point2 : IComparable<Point2>, IEquatable<Point2>
+	public class Point2 : IComparable<Point2>, IEquatable<Point2>
 	{
 		private static int IncID = 0;
 		private int m_id;
-		public float X;
-		public float Y;
+		public float x;
+		public float y;
+		public Point2 m_left;
+		public Point2 m_right;
 		public Point2(float _x, float _y)
 		{
 			m_id = IncID++;
-			X = _x;
-			Y = _y;
+			x = _x;
+			y = _y;
 		}
 		public Point2(Vector2 _point)
 		{
 			m_id = IncID++;
-			X = _point.x;
-			Y = _point.y;
+			x = _point.x;
+			y = _point.y;
 		}
 		public void SetValue(Vector2 _point)
 		{
@@ -27,22 +29,22 @@ namespace SweepLine
 			{
 				m_id = IncID++;
 			}
-			X = _point.x;
-			Y = _point.y;
+			x = _point.x;
+			y = _point.y;
 		}
 		public Vector2 getValue()
 		{
-			return new Vector2(X, Y);
+			return new Vector2(x, y);
 		}
 		public int CompareTo(Point2 other)
 		{
-			if(X != other.X)
+			if(x != other.x)
 			{
-				return X > other.X ? 1 : -1;
+				return x > other.x ? 1 : -1;
 			}
-			if(Y != other.Y)
+			if(y != other.y)
 			{
-				return Y > other.Y ? 1 : -1;
+				return y > other.y ? 1 : -1;
 			}
 			return 0;
 		}
@@ -57,7 +59,11 @@ namespace SweepLine
 		}
 		public bool Equals(Point2 other)
 		{
-			return CompareTo(other) == 0;
+			if (CompareTo(other) != 0)
+			{
+				return false;
+			}
+			return m_id == other.m_id;
 		}
 		public override bool Equals(object obj)
 		{
@@ -65,14 +71,14 @@ namespace SweepLine
 		}
 		public override int GetHashCode()
 		{
-			int hash = 13;
-			hash = (hash * 7) + X.GetHashCode();
-			hash = (hash * 7) + Y.GetHashCode();
-			return hash;
+			//int hash = 13;
+			//hash = (hash * 7) + X.GetHashCode();
+			//hash = (hash * 7) + Y.GetHashCode();
+			return RuntimeHelpers.GetHashCode(this);
 		}
 		public override String ToString()
 		{
-			return "(" + X + "," + Y + ")";
+			return "(" + x + "," + y + ")";
 		}
 
 
