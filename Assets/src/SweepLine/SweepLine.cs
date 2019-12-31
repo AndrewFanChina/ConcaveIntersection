@@ -34,11 +34,18 @@ namespace SweepLine
 			}
 			else
 			{
-				_result = m_inOut== InOut.Out? InOut.In: InOut.Out;
+				_result = Reverse(m_inOut);
 			}
 			return _result;
-
 		}
+		public static InOut Reverse(InOut _inout)
+		{
+			_inout = _inout == InOut.Out ? InOut.In : InOut.Out;
+			return _inout;
+		}
+
+
+
 	}
 
 	public class SweepLine
@@ -76,20 +83,15 @@ namespace SweepLine
 				Vector2 _pIV = _pI.getValue();
 				Vector2 _neighbor0 = _pIL.getValue() - _pIV;
 				Vector2 _neighbor1 = _pIR.getValue() - _pIV;
-				if(_neighbor0.x > 0 && _neighbor1.x > 0)      //Open point,add double slope
+				if(_neighbor0.x > 0 && _neighbor1.x > 0)      //Open Site,add double slope
 				{
-					var _inOut = InOutOf(_pIV);
-					SlopeRegion _region =new SlopeRegion();
-					_region.m_y = _pIV.y;
-					_region.m_slop = SlopeOf(_neighbor0);
-
-
+					OpenSite(_pIV, _neighbor0, _neighbor1);
 				}
-				else if(_neighbor0.x < 0 && _neighbor1.x < 0) //Close point,remove double slopes
+				else if(_neighbor0.x < 0 && _neighbor1.x < 0) //Close Site,remove double slopes
 				{
-
+					TurnSite(_pIV, _neighbor0, _neighbor1);
 				}
-				else //Turn point,add single slope
+				else //Turn Site,add single slope
 				{
 
 				}
@@ -99,21 +101,86 @@ namespace SweepLine
 
 		}
 
-		private InOut InOutOf(Vector2 _pos)
+		protected void OpenSite(Vector2 _sitePos, Vector2 _siteSlope1, Vector2 _siteSlope2)
+		{
+			if (_siteSlope1.y < _siteSlope2.y)
+			{
+				var _temp = _siteSlope2;
+				_siteSlope2 = _siteSlope1;
+				_siteSlope1 = _temp;
+			}
+			int _regionID;
+			var _inOut =  InOutOf(_sitePos, out _regionID);
+			SlopeRegion _region1 = new SlopeRegion();
+			_region1.m_sitePos = _sitePos;
+			_region1.m_slop = SlopeOf(_siteSlope1);
+			_region1.m_inOut = _inOut;
+
+			SlopeRegion _region2 = new SlopeRegion();
+			_region2.m_sitePos = _sitePos;
+			_region2.m_slop = SlopeOf(_siteSlope2);
+			_region2.m_inOut = SlopeRegion.Reverse(_inOut);
+
+			if (_regionID >= m_sweepLine.Count)
+			{
+				m_sweepLine.Add(_region1);
+				m_sweepLine.Add(_region2);
+			}
+			else
+			{
+				m_sweepLine.Insert(_regionID, _region2);
+				m_sweepLine.Insert(_regionID, _region1);
+			}
+
+		}
+
+		protected void TurnSite(Vector2 _sitePos, Vector2 _siteSlope1, Vector2 _siteSlope2)
+		{
+			if(_siteSlope1.x > _siteSlope2.x)
+			{
+				var _temp = _siteSlope2;
+				_siteSlope2 = _siteSlope1;
+				_siteSlope1 = _temp;
+			}
+
+			Vector2 _sitePosLeft = _sitePos + _siteSlope1;
+			_sitePosLeft.y += float.Epsilon;
+			int _regionID;
+
+			var _inOut = InOutOf(_sitePosLeft, out _regionID);
+			SlopeRegion _region = new SlopeRegion();
+			_region.m_sitePos = _sitePos;
+			_region.m_slop = SlopeOf(_siteSlope2);
+			_region.m_inOut = _inOut;
+
+			if(_regionID >= m_sweepLine.Count)
+			{
+				m_sweepLine.Add(_region);
+			}
+			else
+			{
+				m_sweepLine.Insert(_regionID, _region);
+			}
+		}
+
+		protected InOut InOutOf(Vector2 _pos, out int _regionID)
 		{
 			int _count = m_sweepLine.Count;
 			if(_count == 0)
 			{
+				_regionID = 0;
 				return InOut.Out;
 			}
 
 			float y = _pos.y;
 			if(y < m_sweepLine[0].m_sitePos.y)
 			{
+				_regionID = 0;
 				return InOut.Out;
 			}
 			if(y >= m_sweepLine[_count-1].m_sitePos.y)
 			{
+				_regionID = _count;
 				return InOut.Out;
 			}
 
@@ -139,23 +206,19 @@ namespace SweepLine
 					break;
 				}
 			}
-
+			_regionID = _id;
 			return m_sweepLine[_id].InOutOf(_pos);
 		}
-
 		protected static float SlopeOf(Vector2 _vector2)
 		{
-			if (Mathf.Approximately(_vector2.x, 0))
+			if(Mathf.Approximately(_vector2.x, 0))
 			{
 				return float.MaxValue;
 			}
 			return _vector2.y / _vector2.x;
 		}
 
-		public void AddPoints(float y, Vector2 _neighbor0, Vector2 _neighbor1)
-		{
 
-		}
 	}
 
 }
