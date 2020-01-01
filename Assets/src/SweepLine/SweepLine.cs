@@ -113,11 +113,11 @@ namespace SweepLine
 				}
 				else if(_toLeft.x < 0 && _toRight.x < 0) //Close Site,remove double slopes
 				{
-					TurnSite(_pI, _toLeft, _toRight);
+					CloseSite(_pI, _toLeft, _toRight);
 				}
 				else //Turn Site,add single slope
 				{
-
+					TurnSite(_pI, _toLeft, _toRight);
 				}
 			}
 
@@ -171,6 +171,31 @@ namespace SweepLine
 			_region.m_inOut = _inOut;
 
 			AddRegion(_site, _regionID, ref _region);
+		}
+		protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
+		{
+			Point2 _left;
+			if(_toLeft.x > _toRight.x)
+			{
+				var _temp = _toRight;
+				_toRight = _toLeft;
+				_toLeft = _temp;
+				_left = _site.m_right;
+			}
+			else
+			{
+				_left = _site.m_left;
+			}
+
+			//SlopeRegion _leftSiteRegion = m_lineSet[_left].Min;
+			//int _regionID = _leftSiteRegion.m_regionID;
+			//var _inOut = _leftSiteRegion.m_inOut;
+
+			//SlopeRegion _region = new SlopeRegion();
+			//_region.m_slop = SlopeOf(_toRight);
+			//_region.m_inOut = _inOut;
+
+			//AddRegion(_site, _regionID, ref _region);
 		}
 
 
