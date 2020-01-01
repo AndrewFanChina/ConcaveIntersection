@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SweepLine
@@ -22,6 +23,7 @@ namespace SweepLine
 		public Point2 m_site;
 		public float m_slop;
 		public InOut m_inOut;
+		public int m_regionID;
 
 		public InOut InOutOf(Vector2 pos)
 		{
@@ -52,7 +54,23 @@ namespace SweepLine
 	{
 		protected List<Point2> m_allPoints = new List<Point2>();
 		protected List<SlopeRegion> m_lineList=new List<SlopeRegion>();
-		//protected Dictionary<int,SlopeRegion> m_lineTable = new Dictionary<int, SlopeRegion>();
+		protected MultiSet<Point2, SlopeRegion> m_lineSet = new MultiSet<Point2, SlopeRegion>();
+
+		protected void AddRegion(Point2 _atSite, int _regionID,ref SlopeRegion _region)
+		{
+			_region.m_site = _atSite;
+			_region.m_regionID = _regionID;
+			if(_regionID >= m_lineList.Count)
+			{
+				m_lineList.Add(_region);
+			}
+			else
+			{
+				m_lineList.Insert(_regionID, _region);
+			}
+			m_lineSet.Add(_atSite, _region);
+		}
+
 		public bool ContainsPoint(IList<Point2> _polygon,Vector2 _point)
 		{
 			//Add polygon points
@@ -118,67 +136,43 @@ namespace SweepLine
 			int _regionID;
 			var _inOut =  InOutOf(_site.getValue(), out _regionID);
 			SlopeRegion _region1 = new SlopeRegion();
-			_region1.m_site = _site;
 			_region1.m_slop = SlopeOf(_toLeft);
 			_region1.m_inOut = _inOut;
 
 			SlopeRegion _region2 = new SlopeRegion();
-			_region2.m_site = _site;
 			_region2.m_slop = SlopeOf(_toRight);
 			_region2.m_inOut = SlopeRegion.Reverse(_inOut);
 
-			if (_regionID >= m_lineList.Count)
-			{
-				m_lineList.Add(_region1);
-				m_lineList.Add(_region2);
-			}
-			else
-			{
-				m_lineList.Insert(_regionID, _region2);
-				m_lineList.Insert(_regionID, _region1);
-			}
-
+			AddRegion(_site, _regionID, ref _region1);
+			AddRegion(_site, _regionID, ref _region2);
 		}
 
 		protected void TurnSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
-			Point2 _left, _right;
+			Point2 _left;
 			if(_toLeft.x > _toRight.x)
 			{
 				var _temp = _toRight;
 				_toRight = _toLeft;
 				_toLeft = _temp;
 				_left = _site.m_right;
-				_right = _site.m_left;
 			}
 			else
 			{
 				_left = _site.m_left;
-				_right = _site.m_right;
 			}
 
-			int _regionID=m_lineList.IndexOf(_left);
+			SlopeRegion _leftSiteRegion = m_lineSet[_left].Min;
+			int _regionID= _leftSiteRegion.m_regionID;
+			var _inOut = _leftSiteRegion.m_inOut;
 
-			var _inOut = InOutOf(_sitePosLeft, out _regionID);
 			SlopeRegion _region = new SlopeRegion();
-			_region.m_site = _site;
 			_region.m_slop = SlopeOf(_toRight);
 			_region.m_inOut = _inOut;
 
-			if(_regionID >= m_lineList.Count)
-			{
-				m_lineList.Add(_region);
-			}
-			else
-			{
-				m_lineList.Insert(_regionID, _region);
-			}
+			AddRegion(_site, _regionID, ref _region);
 		}
 
-		protected SlopeRegion RegionOf(Point2 _pos, out int _regionID)
-		{
-
-		}
 
 		protected InOut InOutOf(Vector2 _pos, out int _regionID)
 		{
