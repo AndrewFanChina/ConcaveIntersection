@@ -1,6 +1,5 @@
 ﻿
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace SweepLine
@@ -18,7 +17,7 @@ namespace SweepLine
 	}
 
 
-	public struct SlopeRegion
+	public class SlopeRegion
 	{
 		public Point2 m_site;
 		public float m_slop;
@@ -56,19 +55,35 @@ namespace SweepLine
 		protected List<SlopeRegion> m_lineList=new List<SlopeRegion>();
 		protected MultiSet<Point2, SlopeRegion> m_lineSet = new MultiSet<Point2, SlopeRegion>();
 
-		protected void AddRegion(Point2 _atSite, int _regionID,ref SlopeRegion _region)
+		protected void AddRegion(Point2 _atSite, int _regionID,SlopeRegion _region)
 		{
 			_region.m_site = _atSite;
-			_region.m_regionID = _regionID;
 			if(_regionID >= m_lineList.Count)
 			{
+				_region.m_regionID = m_lineList.Count;
 				m_lineList.Add(_region);
 			}
 			else
 			{
+				_region.m_regionID = _regionID;
 				m_lineList.Insert(_regionID, _region);
+				for (int i = _regionID; i < m_lineList.Count; i++)
+				{
+					m_lineList[i].m_regionID = i;
+				}
 			}
 			m_lineSet.Add(_atSite, _region);
+		}
+		protected void RemoveRegion(SlopeRegion _region)
+		{
+			var _atSite = _region.m_site;
+			int _regionID = _region.m_regionID;
+			m_lineList.RemoveAt(_regionID);
+			for(int i = _regionID; i < m_lineList.Count; i++)
+			{
+				m_lineList[i].m_regionID = i;
+			}
+			m_lineSet.Remove(_atSite, _region);
 		}
 
 		public bool ContainsPoint(IList<Point2> _polygon,Vector2 _point)
@@ -86,7 +101,7 @@ namespace SweepLine
 				_polygon[i].m_left = _polygon[(i - 1+ len)% len];
 				_polygon[i].m_right = _polygon[(i + 1) % len];
 			}
-			//Add the target point
+			//Add the target point TODO:........
 			Point2 _pointTarget = new Point2(_point);
 			m_allPoints.Add(_pointTarget);
 			//sort from left to right
@@ -143,8 +158,8 @@ namespace SweepLine
 			_region2.m_slop = SlopeOf(_toRight);
 			_region2.m_inOut = SlopeRegion.Reverse(_inOut);
 
-			AddRegion(_site, _regionID, ref _region1);
-			AddRegion(_site, _regionID, ref _region2);
+			AddRegion(_site, _regionID, _region1);
+			AddRegion(_site, _regionID, _region2);
 		}
 
 		protected void TurnSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
@@ -170,24 +185,45 @@ namespace SweepLine
 			_region.m_slop = SlopeOf(_toRight);
 			_region.m_inOut = _inOut;
 
-			AddRegion(_site, _regionID, ref _region);
+			AddRegion(_site, _regionID, _region);
 		}
 		protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
-			Point2 _left;
-			if(_toLeft.x > _toRight.x)
+			Point2 _left,_right;
+			if(_toLeft.x < _toRight.x)
 			{
 				var _temp = _toRight;
 				_toRight = _toLeft;
 				_toLeft = _temp;
 				_left = _site.m_right;
+				_right = _site.m_left;
 			}
 			else
 			{
 				_left = _site.m_left;
+				_right = _site.m_right;
 			}
 
-			//SlopeRegion _leftSiteRegion = m_lineSet[_left].Min;
+			SlopeRegion _HRegion = m_lineSet[_left].Min;
+			SlopeRegion _LRegion = m_lineSet[_right].Max;
+			if (_LRegion.m_site.y > _HRegion.m_site.y)
+			{
+				var _temp = _HRegion;
+				_HRegion = _LRegion;
+				_LRegion = _temp;
+			}
+
+			for (int i = m_lineList.Count-1; i >=0 ; i--)
+			{
+				var regionI = m_lineList[i];
+				var _rID = regionI.m_regionID;
+				if (regionI.m_site.x < _right.x 
+				    && _rID < _HRegion.m_regionID
+					&& _rID > _LRegion.m_regionID)
+				{
+					RemoveRegion(regionI);
+				}
+			}
 			//int _regionID = _leftSiteRegion.m_regionID;
 			//var _inOut = _leftSiteRegion.m_inOut;
 
