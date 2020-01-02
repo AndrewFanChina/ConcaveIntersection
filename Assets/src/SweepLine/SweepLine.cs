@@ -1,5 +1,7 @@
 ﻿
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace SweepLine
@@ -17,7 +19,7 @@ namespace SweepLine
 	}
 
 
-	public class SlopeRegion
+	public class SlopeRegion: IComparable<SlopeRegion>
 	{
 		public Point2 m_site;
 		public float m_slop;
@@ -46,15 +48,28 @@ namespace SweepLine
 		}
 
 
-
+		public int CompareTo(SlopeRegion other)
+		{
+			if (ReferenceEquals(this, other)) return 0;
+			if (ReferenceEquals(null, other)) return 1;
+			if (m_site.y != other.m_site.y)
+			{
+				return m_site.y > other.m_site.y ? -1 : 1;
+			}
+			if(m_slop != other.m_slop)
+			{
+				return m_slop > other.m_slop ? -1 : 1;
+			}
+			return 0;
+		}
 	}
 
 	public class SweepLine
 	{
 		protected List<Point2> m_allPoints = new List<Point2>();
 		protected List<SlopeRegion> m_lineList=new List<SlopeRegion>();
-		protected MultiSet<Point2, SlopeRegion> m_lineSet = new MultiSet<Point2, SlopeRegion>();
-
+		protected MultiSortedSet<Point2, SlopeRegion> m_lineSet = new MultiSortedSet<Point2, SlopeRegion>();
+		protected Point2 m_searchingTarget;
 		protected void AddRegion(Point2 _atSite, int _regionID,SlopeRegion _region)
 		{
 			_region.m_site = _atSite;
@@ -86,6 +101,16 @@ namespace SweepLine
 			m_lineSet.Remove(_atSite, _region);
 		}
 
+		protected void ShowPoints(string _polygonInfor)
+		{
+			_polygonInfor += "\n";
+			foreach(var item in m_allPoints)
+			{
+				_polygonInfor += item.ToString() + ",";
+			}
+			Debug.Log(_polygonInfor);
+		}
+
 		public bool ContainsPoint(IList<Point2> _polygon,Vector2 _point)
 		{
 			//Add polygon points
@@ -96,27 +121,35 @@ namespace SweepLine
 			{
 				m_allPoints.Add(_polygon[i]);
 			}
+			ShowPoints("-----polygon points-----");
 			for(int i = 0; i < len; i++)
 			{
 				_polygon[i].m_left = _polygon[(i - 1+ len)% len];
 				_polygon[i].m_right = _polygon[(i + 1) % len];
 			}
-			//Add the target point TODO:........
-			Point2 _pointTarget = new Point2(_point);
-			m_allPoints.Add(_pointTarget);
+			//Add the target point
+			if (m_searchingTarget == null)
+			{
+				m_searchingTarget = new Point2(_point);
+			}
+			else
+			{
+				m_searchingTarget.SetValue(_point);
+			}
+			m_allPoints.Add(m_searchingTarget);
 			//sort from left to right
 			m_allPoints.Sort();
-			string _polygonInfor = "-----sorted points-----\n";
-			foreach(var item in m_allPoints)
-			{
-				_polygonInfor += item.ToString() + ",";
-			}
-			Debug.Log(_polygonInfor);
+			ShowPoints("-----sorted points-----");
 			//sweep from left to right
 			int _bufLen = m_allPoints.Count;
 			for(int i = 0; i < _bufLen; i++)
 			{
 				Point2 _pI = m_allPoints[i];
+				if (_pI == m_searchingTarget)
+				{
+					return CheckByCurrentLine(m_searchingTarget);
+				}
+
 				Point2 _pIL = m_allPoints[(i + _bufLen - 1) % _bufLen];
 				Point2 _pIR = m_allPoints[(i + 1) % _bufLen];
 				Vector2 _pIV = _pI.getValue();
@@ -138,6 +171,12 @@ namespace SweepLine
 
 			return false;
 
+		}
+
+		protected bool CheckByCurrentLine(Point2 _searchingTarget)
+		{
+			InOut _inOut = InOutOf(_searchingTarget.getValue(), out _);
+			return _inOut == InOut.In;
 		}
 
 		protected void OpenSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)

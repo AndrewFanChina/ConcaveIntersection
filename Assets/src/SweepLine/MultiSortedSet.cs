@@ -2,9 +2,9 @@
 using System.Diagnostics;
 
 
-public class MultiSet<TKey, TValue> : Dictionary<TKey, HashSet<TValue>>
+public class MultiSortedSet<TKey, TValue> : Dictionary<TKey, SortedSet<TValue>>
 {
-	public MultiSet()
+	public MultiSortedSet()
 		: base()
 	{
 	}
@@ -12,10 +12,10 @@ public class MultiSet<TKey, TValue> : Dictionary<TKey, HashSet<TValue>>
 	public void Add(TKey key, TValue value)
 	{
 		Debug.Assert(key!=null);
-		HashSet<TValue> container = null;
+		SortedSet<TValue> container = null;
 		if (!this.TryGetValue(key, out container))
 		{
-			container = new HashSet<TValue>();
+			container = new SortedSet<TValue>();
 			base.Add(key, container);
 		}
 		container.Add(value);
@@ -25,7 +25,7 @@ public class MultiSet<TKey, TValue> : Dictionary<TKey, HashSet<TValue>>
 	{
 		Debug.Assert(key != null);
 		bool toReturn = false;
-		HashSet<TValue> values = null;
+		SortedSet<TValue> values = null;
 		if (this.TryGetValue(key, out values))
 		{
 			toReturn = values.Contains(value);
@@ -37,7 +37,7 @@ public class MultiSet<TKey, TValue> : Dictionary<TKey, HashSet<TValue>>
 	public void Remove(TKey key, TValue value)
 	{
 		Debug.Assert(key != null);
-		HashSet<TValue> container = null;
+		SortedSet<TValue> container = null;
 		if(this.TryGetValue(key, out container))
 		{
 			container.Remove(value);
@@ -48,12 +48,12 @@ public class MultiSet<TKey, TValue> : Dictionary<TKey, HashSet<TValue>>
 		}
 	}
 
-	public HashSet<TValue> GetValues(TKey key, bool returnEmptySet)
+	public SortedSet<TValue> GetValues(TKey key, bool returnEmptySet)
 	{
-		HashSet<TValue> toReturn = null;
+		SortedSet<TValue> toReturn = null;
 		if(!base.TryGetValue(key, out toReturn) && returnEmptySet)
 		{
-			toReturn = new HashSet<TValue>();
+			toReturn = new SortedSet<TValue>();
 		}
 		return toReturn;
 	}

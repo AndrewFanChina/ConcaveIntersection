@@ -7,6 +7,11 @@ namespace SweepLine
     public class SimplePolygon
     {
         protected IList<Point2> m_points = new List<Point2>();
+        public void Clear()
+        {
+	        m_points.Clear();
+        }
+
         public void AddPoint(Vector2 _point)
         {
             m_points.Add(new Point2(_point));

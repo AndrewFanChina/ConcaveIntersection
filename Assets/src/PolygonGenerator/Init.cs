@@ -30,6 +30,7 @@ namespace ConcaveHull
 			Hull.setConcaveHull(concavity, scaleFactor);
 		}
 
+		private Dictionary<Vector2, Vector2> m_tempTable = new Dictionary<Vector2, Vector2>();
 		private void Update()
 		{
 			var _newPos = transform.position;
@@ -37,12 +38,15 @@ namespace ConcaveHull
 			if (m_targetPoint != _pos2D)
 			{
 				m_targetPoint = _pos2D;
-				SimplePolygon _polygon = new SimplePolygon();
+				Segements _polygons = new Segements();
+				m_tempTable.Clear();
 				for(int i = 0; i < Hull.hull_concave_edges.Count; i++)
 				{
-					Vector2 _point = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
-					_polygon.AddPoint(_point);
+					Vector2 left = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
+					Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
+					_polygons.AddSegment(left, right);
 				}
+				SimplePolygon _polygon = _polygons.ToPolygon();
 				m_contains = _polygon.ContainsPoint(m_targetPoint);
 			}
 		}

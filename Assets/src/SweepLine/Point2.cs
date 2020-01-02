@@ -50,6 +50,10 @@ namespace SweepLine
 		}
 		public static bool operator ==(Point2 left, Point2 right)
 		{
+			if (left is null || right is null)
+			{
+				return left is null && right is null;
+			}
 			return left.Equals(right);
 		}
 
