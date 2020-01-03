@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace SweepLine
@@ -29,9 +28,10 @@ namespace SweepLine
 		public InOut InOutOf(Vector2 pos)
 		{
 			Debug.Assert(pos.x>= m_site.x);
-			float _y = m_slop * pos.x;
+			float _slopY = m_slop * (pos.x- m_site.x);
+			float _relativeY = pos.y - m_site.y;
 			InOut _result;
-			if (pos.y >= _y)
+			if (_relativeY >= _slopY)
 			{
 				_result = m_inOut;
 			}
@@ -106,7 +106,7 @@ namespace SweepLine
 			_polygonInfor += "\n";
 			foreach(var item in m_allPoints)
 			{
-				_polygonInfor += item.ToString() + ",";
+				_polygonInfor += item + ",";
 			}
 			Debug.Log(_polygonInfor);
 		}
@@ -150,8 +150,8 @@ namespace SweepLine
 					return CheckByCurrentLine(m_searchingTarget);
 				}
 
-				Point2 _pIL = m_allPoints[(i + _bufLen - 1) % _bufLen];
-				Point2 _pIR = m_allPoints[(i + 1) % _bufLen];
+				Point2 _pIL = _pI.m_left;//m_allPoints[(i + _bufLen - 1) % _bufLen];
+				Point2 _pIR = _pI.m_right; //m_allPoints[(i + 1) % _bufLen];
 				Vector2 _pIV = _pI.getValue();
 				Vector2 _toLeft = _pIL.getValue() - _pIV;
 				Vector2 _toRight = _pIR.getValue() - _pIV;
@@ -181,7 +181,7 @@ namespace SweepLine
 
 		protected void OpenSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
-			if (_toLeft.y < _toRight.y)
+			if (_toLeft.y * _toRight.x < _toRight.y * _toLeft.x)
 			{
 				var _temp = _toRight;
 				_toRight = _toLeft;
@@ -198,7 +198,8 @@ namespace SweepLine
 			_region2.m_inOut = SlopeRegion.Reverse(_inOut);
 
 			AddRegion(_site, _regionID, _region1);
-			AddRegion(_site, _regionID, _region2);
+			AddRegion(_site, _regionID+1, _region2);
+			AlignRegionByX(_site);
 		}
 
 		protected void TurnSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
@@ -216,16 +217,36 @@ namespace SweepLine
 				_left = _site.m_left;
 			}
 
-			SlopeRegion _leftSiteRegion = m_lineSet[_left].Min;
-			int _regionID= _leftSiteRegion.m_regionID;
+			SortedSet<SlopeRegion> _set = m_lineSet[_left];
+			SlopeRegion _leftSiteRegion = null;
+			float _slopeInLeft = SlopeOf(_site.getValue()- _left.getValue());
+			foreach (var _element in _set)
+			{
+				if(_element.m_slop == _slopeInLeft)
+				{
+					_leftSiteRegion = _element;
+					break;
+				}
+			}
 			var _inOut = _leftSiteRegion.m_inOut;
+			int _regionID= GetRegionID(_site.y);
 
 			SlopeRegion _region = new SlopeRegion();
 			_region.m_slop = SlopeOf(_toRight);
 			_region.m_inOut = _inOut;
 
 			AddRegion(_site, _regionID, _region);
+			AlignRegionByX(_site);
 		}
+
+		protected void AlignRegionByX(Point2 _site)
+		{
+			foreach (SlopeRegion _region in m_lineList)
+			{
+				
+			}
+		}
+
 		protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
 		{
 			Point2 _left,_right;
@@ -282,43 +303,36 @@ namespace SweepLine
 				_regionID = 0;
 				return InOut.Out;
 			}
+			_regionID = GetRegionID(_pos.y);
+			return m_lineList[_regionID].InOutOf(_pos);
+		}
 
-			float y = _pos.y;
-			if(y < m_lineList[0].m_site.y)
+		protected int GetRegionID(float y)
+		{
+			int _count = m_lineList.Count;
+			int _up = 0;
+			int _down = _count - 1;
+			int _center = (_up + _down) >> 1;
+			int _id = _up;
+			while(_up < _down)
 			{
-				_regionID = 0;
-				return InOut.Out;
-			}
-			if(y >= m_lineList[_count-1].m_site.y)
-			{
-				_regionID = _count;
-				return InOut.Out;
-			}
-
-			int _left = 0;
-			int _right = _count;
-			int _center = (_left + _right) >>1;
-			int _id = _left;
-			while (_left < _center)
-			{
-				if(y <= m_lineList[_center].m_site.y)
+				if(y >= m_lineList[_center].m_site.y)
 				{
-					_id = _left;
-					_right = _center;
+					_id = _up;
+					_down = _center;
 				}
 				else
 				{
-					_id = _right;
-					_left = _center;
+					_id = _down;
+					_up = _center;
 				}
-				_center = (_left + _right) >>1;
-				if (_center==_left|| _center == _right)
+				_center = (_up + _down) >> 1;
+				if(_center == _up || _center == _down)
 				{
 					break;
 				}
 			}
-			_regionID = _id;
-			return m_lineList[_id].InOutOf(_pos);
+			return _id;
 		}
 
 		protected static float SlopeOf(Vector2 _vector2)
