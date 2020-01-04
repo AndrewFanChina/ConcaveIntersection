@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-///  动态数组
+///  动态可排序数组
 ///  @author AndrewFan
 /// </summary>
 /// <typeparam name="T">任意类型</typeparam>
-public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
+public class SortableList<T> : IEnumerable<T> where T:IComparable<T>
 {
 	protected int m_capacity = 10;  // 容量
 	protected T[] m_items;// 内部数组
@@ -17,11 +17,11 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 
 	protected IEnumerator<T>[] m_enumerators; //枚举器组
 	protected bool[] m_enumStates;//枚举器组当前占用状态
-	public AB_List()
+	public SortableList()
 	{
 		init(5);
 	}
-	public AB_List(int capacity, int enumCount = 5)
+	public SortableList(int capacity, int enumCount = 5)
 	{
 		init(enumCount);
 	}
@@ -36,7 +36,7 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 			m_enumStates = new bool[enumCount];
 			for(int i = 0; i < m_enumerators.Length; i++)
 			{
-				m_enumerators[i] = new ABEnumerator<T>(this, i);
+				m_enumerators[i] = new SLEnumerator<T>(this, i);
 			}
 		}
 	}
@@ -75,10 +75,8 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 		// {
 		// datas[i]=datas[i-1];
 		// }
-		System.Array.Copy(m_items, index, m_items, index + 1, m_length - index);
-
+		Array.Copy(m_items, index, m_items, index + 1, m_length - index);
 		m_items[index] = element;
-
 		m_length++;
 		return true;
 	}
@@ -119,7 +117,7 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 			}
 			newCapacity *= 2;
 			T[] datasNew = new T[newCapacity];
-			System.Array.Copy(m_items, 0, datasNew, 0, m_length);
+			Array.Copy(m_items, 0, datasNew, 0, m_length);
 			m_items = datasNew;
 			m_capacity = newCapacity;
 		}
@@ -394,9 +392,9 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 		m_items[dex1] = m_items[dex2]; // B into A
 		m_items[dex2] = temp; // temp into B
 	}
-	struct ABEnumerator<T> : IDisposable, IEnumerator<T> where T : IComparable<T>
+	struct SLEnumerator<T> : IDisposable, IEnumerator<T> where T : IComparable<T>
 	{
-		private AB_List<T> m_list;
+		private SortableList<T> m_list;
 		private int m_idNext;
 		private T m_current;
 		private int m_id;
@@ -419,7 +417,7 @@ public class AB_List<T> : IEnumerable<T> where T:IComparable<T>
 			}
 		}
 
-		internal ABEnumerator(AB_List<T> list, int id)
+		internal SLEnumerator(SortableList<T> list, int id)
 		{
 			m_list = list;
 			m_idNext = 0;

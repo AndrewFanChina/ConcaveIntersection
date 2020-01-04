@@ -7,8 +7,8 @@ namespace SweepLine
    
     public class SweepLine
     {
-        protected AB_List<Point2> m_rowPoints = new AB_List<Point2>();
-        protected AB_List<SlopeRegion> m_sweepRegions = new AB_List<SlopeRegion>();
+        protected SortableList<Point2> m_rowPoints = new SortableList<Point2>();
+        protected SortableList<SlopeRegion> m_sweepRegions = new SortableList<SlopeRegion>();
         protected void RemoveEndwith(Point2 _site)
         {
             for (int i = 0; i < m_sweepRegions.Count; i++)
