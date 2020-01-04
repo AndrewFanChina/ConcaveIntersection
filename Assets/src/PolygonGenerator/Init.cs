@@ -47,7 +47,10 @@ namespace ConcaveHull
 					_polygons.AddSegment(left, right);
 				}
 				SimplePolygon _polygon = _polygons.ToPolygon();
+				float _t1=Time.realtimeSinceStartup;
 				m_contains = _polygon.ContainsPoint(m_targetPoint);
+				float _t2=Time.realtimeSinceStartup;
+				Debug.Log("used time:"+(_t2-_t1));
 			}
 		}
 
