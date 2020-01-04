@@ -7,8 +7,8 @@ namespace SweepLine
    
     public class SweepLine
     {
-        protected List<Point2> m_sortedPoints = new List<Point2>();
-        protected List<SlopeRegion> m_sweepRegions = new List<SlopeRegion>();
+        protected AB_List<Point2> m_rowPoints = new AB_List<Point2>();
+        protected AB_List<SlopeRegion> m_sweepRegions = new AB_List<SlopeRegion>();
         protected void RemoveEndwith(Point2 _site)
         {
             for (int i = 0; i < m_sweepRegions.Count; i++)
@@ -25,7 +25,7 @@ namespace SweepLine
         protected void ShowPoints(string _polygonInfor)
         {
             _polygonInfor += "\n";
-            foreach (var item in m_sortedPoints)
+            foreach (var item in m_rowPoints)
             {
                 _polygonInfor += item + ",";
             }
@@ -39,19 +39,19 @@ namespace SweepLine
             {
 				_polygon[i].m_left = _polygon[(i - 1 + len) % len];
 				_polygon[i].m_right = _polygon[(i + 1) % len];
-				m_sortedPoints.Add(_polygon[i]);
+				m_rowPoints.Add(_polygon[i]);
             }
             //ShowPoints("-----polygon points-----");
-            m_sortedPoints.Add(_target);
-            //sort from left to right
-            m_sortedPoints.Sort();
+            m_rowPoints.Add(_target);
+			//sort from left to right
+			m_rowPoints.QuickSort();
             //ShowPoints("-----sorted points-----");
             //sweep from left to right
-            int _bufLen = m_sortedPoints.Count;
+            int _bufLen = m_rowPoints.Count;
 			bool _result = false;
             for (int i = 0; i < _bufLen; i++)
             {
-                Point2 _pI = m_sortedPoints[i];
+                Point2 _pI = m_rowPoints[i];
                 if (_pI == _target)
                 {
 					_result = CheckByCurrentLine(_target);
@@ -78,7 +78,7 @@ namespace SweepLine
             }
 
 			//Add polygon points
-			m_sortedPoints.Clear();
+			m_rowPoints.Clear();
 			foreach(var item in m_sweepRegions)
 			{
 				SlopeRegion.Pool.GiveBack(item);
@@ -93,8 +93,8 @@ namespace SweepLine
             {
                 m_sweepRegions[i].SweepTo(x);
             }
-            m_sweepRegions.Sort();
-        }
+            m_sweepRegions.QuickSort();
+		}
 
         protected bool CheckByCurrentLine(Point2 _searchingTarget)
         {

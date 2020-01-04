@@ -50,7 +50,7 @@ namespace ConcaveHull
 				float _t1=Time.realtimeSinceStartup;
 				m_contains = m_polygon.ContainsPoint(m_targetPoint);
 				float _t2=Time.realtimeSinceStartup;
-				// Debug.Log("used time:"+(_t2-_t1));
+				 Debug.Log("used time:"+(_t2-_t1));
 			}
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SweepLine
 {
@@ -11,6 +12,7 @@ namespace SweepLine
 	public class SlopeRegion : IComparable<SlopeRegion>
 	{
 		public static LittlePool<SlopeRegion> Pool = new LittlePool<SlopeRegion>();
+		public static SlopeRegionComparer Comparer = new SlopeRegionComparer();
 		public Point2 m_start;
 		public Point2 m_end;
 		public float m_slop;
@@ -43,8 +45,8 @@ namespace SweepLine
 
 		public int CompareTo(SlopeRegion other)
 		{
-			if(ReferenceEquals(this, other)) return 0;
-			if(ReferenceEquals(null, other)) return 1;
+			//if(ReferenceEquals(this, other)) return 0;
+			//if(ReferenceEquals(null, other)) return 1;
 			if(m_swY != other.m_swY)
 			{
 				return m_swY > other.m_swY ? -1 : 1;
@@ -52,7 +54,13 @@ namespace SweepLine
 			return 0;
 		}
 
-
+		public class SlopeRegionComparer : IComparer<SlopeRegion>
+		{
+			public int Compare(SlopeRegion x, SlopeRegion y)
+			{
+				return x.CompareTo(y);
+			}
+		}
 	}
 
 }

@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace SweepLine
 {
     public class Point2 : IComparable<Point2>
     {
         public static LittlePool<Point2> Pool=new LittlePool<Point2>();
-        public float x;
+		public static Point2Comparer Comparer = new Point2Comparer();
+		public float x;
         public float y;
         public Point2 m_left;
         public Point2 m_right;
@@ -35,8 +37,9 @@ namespace SweepLine
             }
             return 0;
         }
-        
-        public override String ToString()
+
+
+		public override String ToString()
         {
             return "(" + x + "," + y + ")";
         }
@@ -50,5 +53,13 @@ namespace SweepLine
             return InOut.In;
         }
 
-    }
+		public class Point2Comparer : IComparer<Point2>
+		{
+			public int Compare(Point2 x, Point2 y)
+			{
+				return x.CompareTo(y);
+			}
+		}
+
+	}
 }
