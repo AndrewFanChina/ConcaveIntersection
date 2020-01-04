@@ -15,6 +15,7 @@ namespace ConcaveHull
 		public double concavity;
 		public Vector2 m_targetPoint;
 		public bool m_contains;
+		SimplePolygon m_polygon;
 		void Start()
 		{
 			var _time1 = Time.realtimeSinceStartup;
@@ -28,9 +29,17 @@ namespace ConcaveHull
 		{
 			Hull.setConvexHull(dot_list);
 			Hull.setConcaveHull(concavity, scaleFactor);
+			SegementsLoop _loop = new SegementsLoop();
+			for(int i = 0; i < Hull.hull_concave_edges.Count; i++)
+			{
+				Vector2 left = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
+				Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
+				_loop.AddSegment(left, right);
+			}
+			m_polygon = _loop.ToPolygon();
 		}
 
-		private Dictionary<Vector2, Vector2> m_tempTable = new Dictionary<Vector2, Vector2>();
+
 		private void Update()
 		{
 			var _newPos = transform.position;
@@ -38,19 +47,10 @@ namespace ConcaveHull
 			if (m_targetPoint != _pos2D)
 			{
 				m_targetPoint = _pos2D;
-				Segements _polygons = new Segements();
-				m_tempTable.Clear();
-				for(int i = 0; i < Hull.hull_concave_edges.Count; i++)
-				{
-					Vector2 left = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
-					Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
-					_polygons.AddSegment(left, right);
-				}
-				SimplePolygon _polygon = _polygons.ToPolygon();
 				float _t1=Time.realtimeSinceStartup;
-				m_contains = _polygon.ContainsPoint(m_targetPoint);
+				m_contains = m_polygon.ContainsPoint(m_targetPoint);
 				float _t2=Time.realtimeSinceStartup;
-				Debug.Log("used time:"+(_t2-_t1));
+				// Debug.Log("used time:"+(_t2-_t1));
 			}
 		}
 

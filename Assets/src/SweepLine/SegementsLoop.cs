@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SweepLine
 {
-	public class Segements
+	public class SegementsLoop
 	{
 		protected MultiSet<Vector2, Vector2> m_segements=new MultiSet<Vector2, Vector2>();
 		protected MultiSet<Vector2, Vector2> m_fullCast = new MultiSet<Vector2, Vector2>();

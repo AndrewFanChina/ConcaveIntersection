@@ -6,7 +6,7 @@ namespace SweepLine
 {
     public class SimplePolygon
     {
-        protected IList<Point2> m_points = new List<Point2>();
+        protected List<Point2> m_points = new List<Point2>();
         public void Clear()
         {
 	        m_points.Clear();
@@ -14,23 +14,14 @@ namespace SweepLine
 
         public void AddPoint(Vector2 _point)
         {
-            m_points.Add(new Point2(_point));
+            m_points.Add(Point2.Pool.Take.SetValue(_point));
         }
 
         public void AddPoints(Vector2[] _points)
         {
             for (int i = 0; i < _points.Length; i++)
             {
-                m_points.Add(new Point2(_points[i]));
-            }
-        }
-
-        public void AddPoints(float[] _points)
-        {
-            int _len=_points.Length-_points.Length%2;
-            for (int i = 0; i < _len; i+=2)
-            {
-                m_points.Add(new Point2(_points[i],_points[i+1]));
+                AddPoint(_points[i]);
             }
         }
 
@@ -43,9 +34,19 @@ namespace SweepLine
 
         // protected static Dictionary<Point2, SimplePolygon> BufferedTable = new Dictionary<Point2, SimplePolygon>();
 		protected SweepLine m_sweepLine=new SweepLine();
+		protected Point2 m_searchingTarget;
 		public bool ContainsPoint(Vector2 _point)
         {
-           return m_sweepLine.ContainsPoint(m_points, _point);
+			//Add the target point
+			if(m_searchingTarget == null)
+			{
+				m_searchingTarget = Point2.Pool.Take.SetValue(_point);
+			}
+			else
+			{
+				m_searchingTarget.SetValue(_point);
+			}
+			return m_sweepLine.ContainsPoint(m_points, m_searchingTarget);
         }
     }
 }
