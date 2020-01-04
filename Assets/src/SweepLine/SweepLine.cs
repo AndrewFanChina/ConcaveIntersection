@@ -20,26 +20,24 @@ namespace SweepLine
 
     public class SlopeRegion : IComparable<SlopeRegion>
     {
-        public Point2 m_site;
+        public Point2 m_start;
+        public Point2 m_end;
         public float m_slop;
         public InOut m_inOut;
         public int m_regionID;
-
-        public InOut InOutOf(Vector2 pos)
+        public SlopeRegion(Point2 _start, Point2 _end)
         {
-            Debug.Assert(pos.x >= m_site.x);
-            float _slopY = m_slop * (pos.x - m_site.x);
-            float _relativeY = pos.y - m_site.y;
-            InOut _result;
-            if (_relativeY >= _slopY)
-            {
-                _result = m_inOut;
-            }
-            else
-            {
-                _result = Reverse(m_inOut);
-            }
-            return _result;
+            m_start = _start;
+            m_end = _end;
+            m_inOut = Point2.InOutOf(_start, _end);
+        }
+
+        public bool Contains(Point2 pos)
+        {
+            Debug.Assert(pos.x >= m_start.x);
+            float _slopY = m_slop * (pos.x - m_start.x);
+            float _relativeY = pos.y - m_start.y;
+            return _relativeY <= _slopY;
         }
         public static InOut Reverse(InOut _inout)
         {
@@ -52,9 +50,9 @@ namespace SweepLine
         {
             if (ReferenceEquals(this, other)) return 0;
             if (ReferenceEquals(null, other)) return 1;
-            if (m_site.y != other.m_site.y)
+            if (m_start.y != other.m_start.y)
             {
-                return m_site.y > other.m_site.y ? -1 : 1;
+                return m_start.y > other.m_start.y ? -1 : 1;
             }
             if (m_slop != other.m_slop)
             {
@@ -62,17 +60,18 @@ namespace SweepLine
             }
             return 0;
         }
+
+
     }
 
     public class SweepLine
     {
         protected List<Point2> m_allPoints = new List<Point2>();
         protected List<SlopeRegion> m_lineList = new List<SlopeRegion>();
-        protected MultiSortedSet<Point2, SlopeRegion> m_lineSet = new MultiSortedSet<Point2, SlopeRegion>();
         protected Point2 m_searchingTarget;
         protected void InseartRegion(Point2 _atSite, int _regionID, SlopeRegion _region)
         {
-            _region.m_site = _atSite;
+            _region.m_start = _atSite;
             if (_regionID >= m_lineList.Count)
             {
                 _region.m_regionID = m_lineList.Count;
@@ -87,22 +86,26 @@ namespace SweepLine
                     m_lineList[i].m_regionID = i;
                 }
             }
-            m_lineSet.Add(_atSite, _region);
         }
         protected void RemoveRegion(SlopeRegion _region)
         {
-            var _atSite = _region.m_site;
+            var _atSite = _region.m_start;
             int _regionID = _region.m_regionID;
             m_lineList.RemoveAt(_regionID);
             for (int i = _regionID; i < m_lineList.Count; i++)
             {
                 m_lineList[i].m_regionID = i;
             }
-            m_lineSet.Remove(_atSite, _region);
         }
-        private void RemoveEndwith(Point2 _site)
+        protected void RemoveEndwith(Point2 _site)
         {
-
+            for (int i = 0; i < m_lineList.Count; i++)
+            {
+                if (m_lineList[i].m_end == _site)
+                {
+                    RemoveRegion(m_lineList[i]);
+                }
+            }
         }
         protected void ShowPoints(string _polygonInfor)
         {
@@ -178,30 +181,25 @@ namespace SweepLine
 
         protected bool CheckByCurrentLine(Point2 _searchingTarget)
         {
-            ////	int _count = m_lineList.Count;
-            ////	if(_count == 0)
-            ////	{
-            ////		_regionID = 0;
-            ////		return InOut.Out;
-            ////	}
-            ////	_regionID = GetRegionID(_pos.y);
-            ////	return m_lineList[_regionID].InOutOf(_pos);
-
-            InOut _inOut = InOutOf(_searchingTarget.getValue(), out _);
-            return _inOut == InOut.In;
+            for (int i = m_lineList.Count - 1; i >= 0; i--)
+            {
+                if (m_lineList[i].Contains(_searchingTarget))
+                {
+                    return m_lineList[i].m_inOut == InOut.In;
+                }
+            }
+            return false;
         }
 
         protected void OpenSite(Point2 _site)
         {
-            SlopeRegion _regionHi = new SlopeRegion();
+            SlopeRegion _regionHi = new SlopeRegion(_site, _site.m_left);
             var _toLeft = _site.m_left.getValue() - _site.getValue();
             _regionHi.m_slop = SlopeOf(_toLeft);
-            _regionHi.m_inOut = InOutOf(_site, _site.m_left);
 
-            SlopeRegion _regionLow = new SlopeRegion();
+            SlopeRegion _regionLow = new SlopeRegion(_site, _site.m_right);
             var _toRight = _site.m_right.getValue() - _site.getValue();
             _regionLow.m_slop = SlopeOf(_toRight);
-            _regionLow.m_inOut = InOutOf(_site, _site.m_right);
 
             if (_toLeft.y < _toRight.y)
             {
@@ -226,87 +224,19 @@ namespace SweepLine
             {
                 _right = _site.m_left;
             }
-            //remove left neighbor region
             RemoveEndwith(_site);
-            SlopeRegion _region = new SlopeRegion();
+            SlopeRegion _region = new SlopeRegion(_site, _right);
             var _toRight = _right.getValue() - _site.getValue();
             _region.m_slop = SlopeOf(_toRight);
-            _region.m_inOut = InOutOf(_site, _right);
             int _regionID = GetRegionID(_site.y);
             InseartRegion(_site, _regionID, _region);
 
         }
 
-
-
         protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
         {
-            Point2 _left, _right;
-            if (_toLeft.x < _toRight.x)
-            {
-                var _temp = _toRight;
-                _toRight = _toLeft;
-                _toLeft = _temp;
-                _left = _site.m_right;
-                _right = _site.m_left;
-            }
-            else
-            {
-                _left = _site.m_left;
-                _right = _site.m_right;
-            }
-
-            SlopeRegion _HRegion = m_lineSet[_left].Min;
-            SlopeRegion _LRegion = m_lineSet[_right].Max;
-            if (_LRegion.m_site.y > _HRegion.m_site.y)
-            {
-                var _temp = _HRegion;
-                _HRegion = _LRegion;
-                _LRegion = _temp;
-            }
-
-            for (int i = m_lineList.Count - 1; i >= 0; i--)
-            {
-                var regionI = m_lineList[i];
-                var _rID = regionI.m_regionID;
-                if (regionI.m_site.x < _right.x
-                    && _rID < _HRegion.m_regionID
-                    && _rID > _LRegion.m_regionID)
-                {
-                    RemoveRegion(regionI);
-                }
-            }
-            //int _regionID = _leftSiteRegion.m_regionID;
-            //var _inOut = _leftSiteRegion.m_inOut;
-
-            //SlopeRegion _region = new SlopeRegion();
-            //_region.m_slop = SlopeOf(_toRight);
-            //_region.m_inOut = _inOut;
-
-            //AddRegion(_site, _regionID, ref _region);
+            RemoveEndwith(_site);
         }
-
-        protected InOut InOutOf(Point2 _pointStart, Point2 _pointEnd)
-        {
-            if (_pointStart.m_right == _pointEnd)
-            {
-                return InOut.Out;
-            }
-            return InOut.In;
-        }
-
-        //protected InOut InOutOf(Vector2 _pos, out int _regionID)
-        //{
-        //	int _count = m_lineList.Count;
-        //	if(_count == 0)
-        //	{
-        //		_regionID = 0;
-        //		return InOut.Out;
-        //	}
-        //	_regionID = GetRegionID(_pos.y);
-        //	return m_lineList[_regionID].InOutOf(_pos);
-        //}
-
         protected int GetRegionID(float y)
         {
             int _count = m_lineList.Count;
@@ -316,7 +246,7 @@ namespace SweepLine
             int _id = _up;
             while (_up < _down)
             {
-                if (y >= m_lineList[_center].m_site.y)
+                if (y >= m_lineList[_center].m_start.y)
                 {
                     _id = _up;
                     _down = _center;
