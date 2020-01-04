@@ -33,3 +33,8 @@ Thumbs.db
 /ProjectSettings
 /Logs
 /.vs
+/.idea
+/Assets/Plugins.meta
+/Assets/Plugins/Editor.meta
+/Assets/Plugins/Editor/JetBrains.meta
+/Assets/Plugins/Editor/JetBrains/JetBrains.Rider.Unity.Editor.Plugin.Repacked.dll.meta
