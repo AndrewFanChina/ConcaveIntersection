@@ -24,7 +24,6 @@ namespace SweepLine
         public Point2 m_end;
         public float m_slop;
         public InOut m_inOut;
-        public int m_regionID;
         public SlopeRegion(Point2 _start, Point2 _end)
         {
             m_start = _start;
@@ -54,6 +53,10 @@ namespace SweepLine
             {
                 return m_start.y > other.m_start.y ? -1 : 1;
             }
+            if (m_end.y != other.m_end.y)
+            {
+                return m_end.y > other.m_end.y ? -1 : 1;
+            }
             if (m_slop != other.m_slop)
             {
                 return m_slop > other.m_slop ? -1 : 1;
@@ -69,41 +72,14 @@ namespace SweepLine
         protected List<Point2> m_allPoints = new List<Point2>();
         protected List<SlopeRegion> m_lineList = new List<SlopeRegion>();
         protected Point2 m_searchingTarget;
-        protected void InseartRegion(Point2 _atSite, int _regionID, SlopeRegion _region)
-        {
-            _region.m_start = _atSite;
-            if (_regionID >= m_lineList.Count)
-            {
-                _region.m_regionID = m_lineList.Count;
-                m_lineList.Add(_region);
-            }
-            else
-            {
-                _region.m_regionID = _regionID;
-                m_lineList.Insert(_regionID, _region);
-                for (int i = _regionID; i < m_lineList.Count; i++)
-                {
-                    m_lineList[i].m_regionID = i;
-                }
-            }
-        }
-        protected void RemoveRegion(SlopeRegion _region)
-        {
-            var _atSite = _region.m_start;
-            int _regionID = _region.m_regionID;
-            m_lineList.RemoveAt(_regionID);
-            for (int i = _regionID; i < m_lineList.Count; i++)
-            {
-                m_lineList[i].m_regionID = i;
-            }
-        }
         protected void RemoveEndwith(Point2 _site)
         {
             for (int i = 0; i < m_lineList.Count; i++)
             {
                 if (m_lineList[i].m_end == _site)
                 {
-                    RemoveRegion(m_lineList[i]);
+                    m_lineList.RemoveAt(i);
+                    i--;
                 }
             }
         }
@@ -208,8 +184,9 @@ namespace SweepLine
                 _regionLow = _temp;
             }
             int _regionID = GetRegionID(_site.y);
-            InseartRegion(_site, _regionID, _regionHi);
-            InseartRegion(_site, _regionID + 1, _regionLow);
+            m_lineList.Add(_regionHi);
+            m_lineList.Add(_regionLow);
+            m_lineList.Sort();
         }
 
 
@@ -228,9 +205,8 @@ namespace SweepLine
             SlopeRegion _region = new SlopeRegion(_site, _right);
             var _toRight = _right.getValue() - _site.getValue();
             _region.m_slop = SlopeOf(_toRight);
-            int _regionID = GetRegionID(_site.y);
-            InseartRegion(_site, _regionID, _region);
-
+            m_lineList.Add(_region);
+            m_lineList.Sort();
         }
 
         protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
