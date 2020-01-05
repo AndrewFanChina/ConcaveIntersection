@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace ConcaveHull {
-    public static class Hull {
-        public static List<Node> unused_nodes = new List<Node>();
-        public static List<Line> hull_edges = new List<Line>();
-        public static List<Line> hull_concave_edges = new List<Line>();
+    public class Hull {
+        public List<Node> unused_nodes = new List<Node>();
+        public List<Line> hull_edges = new List<Line>();
+        public List<Line> hull_concave_edges = new List<Line>();
 
-        public static List<Line> getHull(List<Node> nodes) {
+        public List<Line> getHull(List<Node> nodes) {
             List<Node> convexH = new List<Node>();
             List<Line> exitLines = new List<Line>();
             
@@ -21,7 +21,7 @@ namespace ConcaveHull {
             return exitLines;
         }
 
-        public static void setConvexHull(List<Node> nodes) {
+        public void setConvexHull(List<Node> nodes) {
             unused_nodes.AddRange(nodes);
             hull_edges.AddRange(getHull(nodes));
             foreach (Line line in hull_edges) {
@@ -31,7 +31,7 @@ namespace ConcaveHull {
             }
         }
 
-        public static List<Line> setConcaveHull(double concavity, int scaleFactor) {
+        public List<Line> setConcaveHull(double concavity, int scaleFactor) {
             /* Run setConvHull before! 
              * Concavity is a value used to restrict the concave angles 
              * It can go from -1 (no concavity) to 1 (extreme concavity) 

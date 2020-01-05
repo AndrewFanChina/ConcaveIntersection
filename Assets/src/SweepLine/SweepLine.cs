@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,8 +38,6 @@ namespace SweepLine
             int len = _polygon.Count;
             for (int i = 0; i < len; i++)
             {
-				_polygon[i].m_left = _polygon[(i - 1 + len) % len];
-				_polygon[i].m_right = _polygon[(i + 1) % len];
 				m_rowPoints.Add(_polygon[i]);
             }
             //ShowPoints("-----polygon points-----");
@@ -85,6 +84,11 @@ namespace SweepLine
 			}
 			m_sweepRegions.Clear();
 			return _result;
+        }
+
+        public bool ContainsPolygon(List<Point2> _polygon1, List<Point2> _polygon2)
+        {
+            return false;
         }
 
         protected void SetSweepTo(float x)

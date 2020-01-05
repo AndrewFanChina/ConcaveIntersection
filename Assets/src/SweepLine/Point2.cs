@@ -53,6 +53,7 @@ namespace SweepLine
             return InOut.In;
         }
 
+
 		public class Point2Comparer : IComparer<Point2>
 		{
 			public int Compare(Point2 x, Point2 y)
