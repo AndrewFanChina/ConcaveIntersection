@@ -41,17 +41,16 @@ namespace SweepLine
             }
             m_sweepRegions.QuickSort();
 		}
-
-        public bool CheckByCurrentLine(Point2 _searchingTarget)
+        public InOut InoutOf(Point2 _searchingTarget)
         {
             for (int i = m_sweepRegions.Count - 1; i >= 0; i--)
             {
                 if (m_sweepRegions[i].Contains(_searchingTarget))
                 {
-                    return m_sweepRegions[i].m_inOut == InOut.In;
+                    return m_sweepRegions[i].m_inOut;
                 }
             }
-            return false;
+            return InOut.Out;
         }
 
         public void OpenSite(Point2 _site)
