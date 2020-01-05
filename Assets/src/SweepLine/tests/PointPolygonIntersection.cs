@@ -1,7 +1,7 @@
 ﻿using ConcaveHull;
 using UnityEngine;
 
-public class Interaction : MonoBehaviour
+public class PointPolygonIntersection : MonoBehaviour
 {
 	public bool m_contains;
 	public Vector2 m_targetPoint;

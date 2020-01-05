@@ -65,9 +65,9 @@ namespace SweepLine
 				m_points[i].SetValue(_point);
 			}
 		}
-		public bool ContainsPolygon(SimplePolygon _other)
+		public bool CrossWith(SimplePolygon _other)
         {
-			return m_sweepLineAlg.ContainsPolygon(this, _other);
+			return m_sweepLineAlg.CrossWith(this, _other);
         }
 
 

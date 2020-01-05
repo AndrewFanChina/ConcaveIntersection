@@ -56,7 +56,7 @@ namespace SweepLine
             return _result;
         }
 
-        public bool ContainsPolygon(SimplePolygon _polygon1, SimplePolygon _polygon2)
+        public bool CrossWith(SimplePolygon _polygon1, SimplePolygon _polygon2)
         {
             List<Point2> _polygon1Points = _polygon1.Points;
             List<Point2> _polygon2Points = _polygon2.Points;

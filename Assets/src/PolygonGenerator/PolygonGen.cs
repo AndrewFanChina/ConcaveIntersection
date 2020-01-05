@@ -14,7 +14,7 @@ namespace ConcaveHull
 		public int number_of_dots;
 		public double concavity;
 		public Color m_color=Color.blue;
-		protected Hull m_hull = new Hull();
+
 		public SimplePolygon m_polygon;
 		void Start()
 		{
@@ -27,16 +27,23 @@ namespace ConcaveHull
 
 		public void generateHull()
 		{
-			m_hull.setConvexHull(dot_list);
-			m_hull.setConcaveHull(concavity, scaleFactor);
+			Hull.setConvexHull(dot_list);
+			Hull.setConcaveHull(concavity, scaleFactor);
 			SegementsLoop _loop = new SegementsLoop();
-			for(int i = 0; i < m_hull.hull_concave_edges.Count; i++)
+			for(int i = 0; i < Hull.hull_concave_edges.Count; i++)
 			{
-				Vector2 left = new Vector2((float)m_hull.hull_concave_edges[i].nodes[0].x, (float)m_hull.hull_concave_edges[i].nodes[0].y);
-				Vector2 right = new Vector2((float)m_hull.hull_concave_edges[i].nodes[1].x, (float)m_hull.hull_concave_edges[i].nodes[1].y);
+                Vector2 left = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
+                Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
 				_loop.AddSegment(left, right);
 			}
 			m_polygon = _loop.ToPolygon();
+			Hull.Clear();
+		}
+
+		protected void Update()
+		{
+			var _pos3=transform.position;
+			m_polygon.SetOriginal(new Vector2(_pos3.x,_pos3.y));
 		}
 
 
@@ -76,14 +83,14 @@ namespace ConcaveHull
 			//}
 
 			// Concave hull
-			Gizmos.color = m_color;
-			for(int i = 0; i < m_hull.hull_concave_edges.Count; i++)
-			{
-				Vector2 left = new Vector2((float)m_hull.hull_concave_edges[i].nodes[0].x, (float)m_hull.hull_concave_edges[i].nodes[0].y);
-				Vector2 right = new Vector2((float)m_hull.hull_concave_edges[i].nodes[1].x, (float)m_hull.hull_concave_edges[i].nodes[1].y);
-				Gizmos.DrawLine(left, right);
-				Gizmos.DrawSphere(new Vector3(left.x, left.y, 0), 0.5f);
-			}
+			// Gizmos.color = m_color;
+			// for(int i = 0; i < Hull.hull_concave_edges.Count; i++)
+			// {
+            //     Vector2 left = new Vector2((float)Hull.hull_concave_edges[i].nodes[0].x, (float)Hull.hull_concave_edges[i].nodes[0].y);
+            //     Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
+            //     Gizmos.DrawLine(left, right);
+            //     Gizmos.DrawSphere(new Vector3(left.x, left.y, 0), 0.5f);
+			// }
 
 			// Dots
 			//Gizmos.color = Color.red;
@@ -91,6 +98,20 @@ namespace ConcaveHull
 			//{
 			//	Gizmos.DrawSphere(new Vector3((float)dot_list[i].x, (float)dot_list[i].y, 0), 0.5f);
 			//}
+			if(m_polygon==null||m_polygon.Points==null)
+			{
+				return;
+			}
+			Gizmos.color = m_color;
+			var _points = m_polygon.Points;
+			int _count=_points.Count;
+			for(int i = 0; i < _count; i++)
+			{
+                Vector2 left = _points[i].getValue();
+                Vector2 right = _points[(i+1)%_count].getValue();
+                Gizmos.DrawLine(left, right);
+                Gizmos.DrawSphere(new Vector3(left.x, left.y, 0), 0.5f);
+			}
 		}
 	}
 
