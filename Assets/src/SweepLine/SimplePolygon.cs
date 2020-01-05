@@ -9,8 +9,15 @@ namespace SweepLine
         protected List<Point2> m_points = new List<Point2>();
 		protected List<Vector2> m_localPoints = new List<Vector2>();
 		protected Vector2 m_original = new Vector2();
-		protected SweepLine m_sweepLine=new SweepLine();
+		protected SweepLineAlg m_sweepLineAlg=new SweepLineAlg();
 		protected Point2 m_searchingTarget;
+		public List<Point2> Points
+		{
+			get
+			{
+				return m_points;
+			}
+		}
         public void Clear()
         {
 			m_localPoints.Clear();
@@ -60,7 +67,7 @@ namespace SweepLine
 		}
 		public bool ContainsPolygon(SimplePolygon _other)
         {
-			return m_sweepLine.ContainsPolygon(m_points, _other.m_points);
+			return m_sweepLineAlg.ContainsPolygon(this, _other);
         }
 
 
@@ -75,7 +82,7 @@ namespace SweepLine
 			{
 				m_searchingTarget.SetValue(_point);
 			}
-			return m_sweepLine.ContainsPoint(m_points, m_searchingTarget);
+			return m_sweepLineAlg.ContainsPoint(m_points, m_searchingTarget);
         }
     }
 }

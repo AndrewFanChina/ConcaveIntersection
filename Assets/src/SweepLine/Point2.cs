@@ -11,7 +11,7 @@ namespace SweepLine
         public float y;
         public Point2 m_left;
         public Point2 m_right;
-
+        public int m_polygonFlag;
         public Point2()
         {
         }

@@ -5,12 +5,19 @@ using UnityEngine;
 
 namespace SweepLine
 {
-   
+  
     public class SweepLine
     {
-        protected SortableList<Point2> m_rowPoints = new SortableList<Point2>();
         protected SortableList<SlopeRegion> m_sweepRegions = new SortableList<SlopeRegion>();
-        protected void RemoveEndwith(Point2 _site)
+        public void Clear()
+        {
+            foreach (var item in m_sweepRegions)
+            {
+                SlopeRegion.Pool.GiveBack(item);
+            }
+            m_sweepRegions.Clear();
+        }
+        public void RemoveEndwith(Point2 _site)
         {
             for (int i = 0; i < m_sweepRegions.Count; i++)
             {
@@ -23,75 +30,10 @@ namespace SweepLine
 				}
             }
         }
-        protected void ShowPoints(string _polygonInfor)
-        {
-            _polygonInfor += "\n";
-            foreach (var item in m_rowPoints)
-            {
-                _polygonInfor += item + ",";
-            }
-            Debug.Log(_polygonInfor);
-        }
 
-        public bool ContainsPoint(List<Point2> _polygon, Point2 _target)
-        {
-            int len = _polygon.Count;
-            for (int i = 0; i < len; i++)
-            {
-				m_rowPoints.Add(_polygon[i]);
-            }
-            //ShowPoints("-----polygon points-----");
-            m_rowPoints.Add(_target);
-			//sort from left to right
-			m_rowPoints.QuickSort();
-            //ShowPoints("-----sorted points-----");
-            //sweep from left to right
-            int _bufLen = m_rowPoints.Count;
-			bool _result = false;
-            for (int i = 0; i < _bufLen; i++)
-            {
-                Point2 _pI = m_rowPoints[i];
-                if (_pI == _target)
-                {
-					_result = CheckByCurrentLine(_target);
-					break;
-                }
 
-                Point2 _pIL = _pI.m_left;
-                Point2 _pIR = _pI.m_right;
-                Vector2 _pIV = _pI.getValue();
-                Vector2 _toLeft = _pIL.getValue() - _pIV;
-                Vector2 _toRight = _pIR.getValue() - _pIV;
-                if (_toLeft.x > 0 && _toRight.x > 0)      //Open Site,add double slope
-                {
-                    OpenSite(_pI);
-                }
-                else if (_toLeft.x < 0 && _toRight.x < 0) //Close Site,remove double slopes
-                {
-                    CloseSite(_pI, _toLeft, _toRight);
-                }
-                else //Turn Site,add single slope
-                {
-                    TurnSite(_pI);
-                }
-            }
 
-			//Add polygon points
-			m_rowPoints.Clear();
-			foreach(var item in m_sweepRegions)
-			{
-				SlopeRegion.Pool.GiveBack(item);
-			}
-			m_sweepRegions.Clear();
-			return _result;
-        }
-
-        public bool ContainsPolygon(List<Point2> _polygon1, List<Point2> _polygon2)
-        {
-            return false;
-        }
-
-        protected void SetSweepTo(float x)
+        public void SetSweepTo(float x)
         {
             for (int i = 0; i < m_sweepRegions.Count; i++)
             {
@@ -100,7 +42,7 @@ namespace SweepLine
             m_sweepRegions.QuickSort();
 		}
 
-        protected bool CheckByCurrentLine(Point2 _searchingTarget)
+        public bool CheckByCurrentLine(Point2 _searchingTarget)
         {
             for (int i = m_sweepRegions.Count - 1; i >= 0; i--)
             {
@@ -112,7 +54,7 @@ namespace SweepLine
             return false;
         }
 
-        protected void OpenSite(Point2 _site)
+        public void OpenSite(Point2 _site)
         {
             SlopeRegion _regionHi = SlopeRegion.Pool.Take.SetValue(_site, _site.m_left);
             var _toLeft = _site.m_left.getValue() - _site.getValue();
@@ -134,7 +76,7 @@ namespace SweepLine
         }
 
 
-        protected void TurnSite(Point2 _site)
+        public void TurnSite(Point2 _site)
         {
             Point2 _right;
             if (_site.m_right.x > _site.m_left.x)
@@ -153,11 +95,11 @@ namespace SweepLine
             SetSweepTo(_site.x);
         }
 
-        protected void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
+        public void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
         {
             RemoveEndwith(_site);
         }
-        protected int GetRegionID(float y)
+        public int GetRegionID(float y)
         {
             int _count = m_sweepRegions.Count;
             int _up = 0;
@@ -185,7 +127,7 @@ namespace SweepLine
             return _id;
         }
 
-        protected static float SlopeOf(Vector2 _vector2)
+        public static float SlopeOf(Vector2 _vector2)
         {
             if (Mathf.Approximately(_vector2.x, 0))
             {
