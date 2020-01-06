@@ -58,8 +58,10 @@ namespace SweepLine
 
         public bool CrossWith(SimplePolygon _polygon1, SimplePolygon _polygon2)
         {
+            // _polygon1.ValidateLoop();
+            // _polygon2.ValidateLoop();
+            m_rowPoints.Clear();
             List<Point2> _polygon1Points = _polygon1.Points;
-            List<Point2> _polygon2Points = _polygon2.Points;
             int len1 = _polygon1Points.Count;
             for (int i = 0; i < len1; i++)
             {
@@ -67,12 +69,13 @@ namespace SweepLine
                 _pI.m_polygonFlag = 0;
                 m_rowPoints.Add(_pI);
             }
+            List<Point2> _polygon2Points = _polygon2.Points;
             int len2 = _polygon2Points.Count;
             for (int i = 0; i < len2; i++)
             {
                 var _pI = _polygon2Points[i];
                 _pI.m_polygonFlag = 1;
-                m_rowPoints.Add(_polygon2Points[i]);
+                m_rowPoints.Add(_pI);
             }
             //sort from left to right
             m_rowPoints.QuickSort();

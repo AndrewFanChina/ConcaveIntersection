@@ -9,6 +9,7 @@ public class DoublePolygonIntersection : MonoBehaviour
     protected PolygonGen m_polygonGen;
     protected Vector2 m_currentPos;
     public bool m_usePresetPoints;
+    public bool m_repeat;
     void Start()
     {
         m_polygonGen = GetComponent<PolygonGen>();
@@ -33,6 +34,11 @@ public class DoublePolygonIntersection : MonoBehaviour
         {
             m_currentPos = _pos2D;
             _needUpdate = true;
+        }
+        if(m_repeat)
+        {
+            m_repeat=false;
+            _needUpdate=true;
         }
         if (_needUpdate)
         {

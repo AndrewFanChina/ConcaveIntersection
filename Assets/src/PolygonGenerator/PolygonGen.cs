@@ -36,15 +36,17 @@ namespace ConcaveHull
                 Vector2 right = new Vector2((float)Hull.hull_concave_edges[i].nodes[1].x, (float)Hull.hull_concave_edges[i].nodes[1].y);
                 _loop.AddSegment(left, right);
             }
-            m_polygon = _loop.ToPolygon().MakeCounterClockwise().LinkNeighbors();
-            UpdateOriginal();
+            var _pos3 = transform.position;
+            var _pos2 = new Vector2((int)_pos3.x, (int)_pos3.y);
+            m_polygon = _loop.ToPolygon().SetOriginal(_pos2).MakeCounterClockwise().LinkNeighbors();
             Hull.Clear();
         }
 
         protected void UpdateOriginal()
         {
             var _pos3 = transform.position;
-            m_polygon.SetOriginal(new Vector2((int)_pos3.x, (int)_pos3.y));
+            var _pos2 = new Vector2((int)_pos3.x, (int)_pos3.y);
+            m_polygon.SetOriginal(_pos2);
         }
         protected void Update()
         {

@@ -45,9 +45,15 @@ namespace SweepLine
             int _halfLen = len / 2;
             for (int i = 0; i < _halfLen; i++)
             {
-                var _temp = m_points[len - 1 - i];
-                m_points[len - 1 - i] = m_points[i];
+                var _back=len - 1 - i;
+                
+                var _temp = m_points[_back];
+                m_points[_back] = m_points[i];
                 m_points[i] = _temp;
+
+                var _temp2 = m_localPoints[_back];
+                m_localPoints[_back] = m_localPoints[i];
+                m_localPoints[i] = _temp2;
             }
             return this;
         }
@@ -106,6 +112,34 @@ namespace SweepLine
             return _loopDir;
         }
 
+        public void ValidateLoop()
+        {
+            var _loopDir = CalculateLoopDir();
+            ShowPoints("----polygon ["+_loopDir+"] ----");
+        }
+
+        protected void ShowPoints(string _polygonInfor)
+        {
+            _polygonInfor += "\n";
+            foreach (var item in m_points)
+            {
+                _polygonInfor += item + ",";
+            }
+            _polygonInfor += "\n";
+            int _count=m_points.Count;
+            if(_count>0)
+            {
+                var _start=m_points[0];
+                var _current=_start;
+                do
+                {
+                    _polygonInfor += _current + ",";
+                    _current=_current.m_right;
+                }
+                while(_current!=_start);
+            }
+            Debug.Log(_polygonInfor);
+        }
         public bool IsClockwise()
         {
             return CalculateLoopDir() == LoopDir.Clockwise;
@@ -136,11 +170,11 @@ namespace SweepLine
                 AddPoint(_points[i]);
             }
         }
-        public void SetOriginal(Vector2 _original)
+        public SimplePolygon SetOriginal(Vector2 _original)
         {
             if (m_original == _original)
             {
-                return;
+                return this;
             }
             m_original = _original;
             for (int i = 0; i < m_localPoints.Count; i++)
@@ -148,6 +182,7 @@ namespace SweepLine
                 var _point = m_localPoints[i] + m_original;
                 m_points[i].SetValue(_point);
             }
+            return this;
         }
         public bool CrossWith(SimplePolygon _other)
         {
