@@ -39,6 +39,7 @@ namespace ConcaveHull
             var _pos3 = transform.position;
             var _pos2 = new Vector2((int)_pos3.x, (int)_pos3.y);
             m_polygon = _loop.ToPolygon().SetOriginal(_pos2).MakeCounterClockwise().LinkNeighbors();
+            // m_polygon.ValidateLoop();
             Hull.Clear();
         }
 

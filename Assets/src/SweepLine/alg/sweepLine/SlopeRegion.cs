@@ -15,7 +15,7 @@ namespace SweepLine
         public static SlopeRegionComparer Comparer = new SlopeRegionComparer();
         public Point2 m_start;
         public Point2 m_end;
-        public float m_slop;
+        public float m_slope;
         public float m_swY;
         public InOut m_inOut;
 
@@ -32,13 +32,13 @@ namespace SweepLine
 
         public void SweepTo(float x)
         {
-            m_swY = m_start.y + m_slop * (x - m_start.x);
+            m_swY = m_start.y + m_slope * (x - m_start.x);
         }
 
         public bool Contains(Point2 pos)
         {
             //Debug.Assert(pos.x >= m_start.x);
-            float _slopY = m_slop * (pos.x - m_start.x);
+            float _slopY = m_slope * (pos.x - m_start.x);
             float _relativeY = pos.y - m_start.y;
             return _relativeY <= _slopY;
         }
@@ -51,9 +51,9 @@ namespace SweepLine
             {
                 return m_swY > other.m_swY ? -1 : 1;
             }
-            if (m_slop != other.m_slop)
+            if (m_slope != other.m_slope)
             {
-                return m_slop > other.m_slop ? -1 : 1;
+                return m_slope > other.m_slope ? -1 : 1;
             }
             return 0;
         }

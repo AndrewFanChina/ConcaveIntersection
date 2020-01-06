@@ -89,6 +89,7 @@ namespace SweepLine
                 var _sweepLineCheck = _pI.m_polygonFlag == 0 ? m_sweepLine1 : m_sweepLine0;
                 if (_sweepLineCheck.InoutOf(_pI) == InOut.In)//TODO:polygon's loop order
                 {
+                    _sweepLineCheck.InoutOf(_pI);
                     _result = true;
                     break;
                 }

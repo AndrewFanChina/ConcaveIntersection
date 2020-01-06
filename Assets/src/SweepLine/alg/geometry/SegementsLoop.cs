@@ -64,7 +64,7 @@ namespace SweepLine
 
                 }
             }
-            return _newPolygon;
+            return  _newPolygon.MakeSimple();
         }
     }
 }

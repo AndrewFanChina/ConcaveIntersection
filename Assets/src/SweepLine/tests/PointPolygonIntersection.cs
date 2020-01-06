@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class PointPolygonIntersection : MonoBehaviour
 {
-	public bool m_contains;
 	public Vector2 m_targetPoint;
 	public PolygonGen m_polygonGen;
+	public TextMesh m_showText;
 	void Start()
     {
         
@@ -21,7 +21,11 @@ public class PointPolygonIntersection : MonoBehaviour
 			if(m_polygonGen != null && m_polygonGen.m_polygon != null)
 			{
 				float _t1 = Time.realtimeSinceStartup;
-				m_contains = m_polygonGen.m_polygon.ContainsPoint(m_targetPoint);
+				var _contains = m_polygonGen.m_polygon.ContainsPoint(m_targetPoint);
+				if(m_showText!=null)
+                {
+                    m_showText.text=_contains?"contains":"not contains";
+                }
 				float _t2 = Time.realtimeSinceStartup;
 				//Debug.Log("used time:"+(_t2-_t1));
 			}

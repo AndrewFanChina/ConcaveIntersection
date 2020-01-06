@@ -7,7 +7,7 @@ namespace SweepLine
     public enum LoopDir
     {
         Clockwise,
-        CounterClockwise,
+        Counterclockwise,
     }
     public class SimplePolygon
     {
@@ -42,8 +42,8 @@ namespace SweepLine
         public SimplePolygon Reverse()
         {
             int len = m_points.Count;
-            int _halfLen = len / 2;
-            for (int i = 0; i < _halfLen; i++)
+            int _halfLen = (len-1) / 2;
+            for (int i = 1; i < _halfLen; i++)
             {
                 var _back=len - 1 - i;
                 
@@ -61,7 +61,7 @@ namespace SweepLine
         {
             return _left.x * _right.y - _right.x * _left.y;
         }
-        private LoopDir CalculateLoopDir()
+        public LoopDir CalculateLoopDir()
         {
             int _pointCount = m_points.Count;
             int _dirNow = 0;
@@ -74,9 +74,9 @@ namespace SweepLine
                 int _currentID = _current % _pointCount;
                 int _preID = (_current - 1 + _pointCount) % _pointCount;
                 int _nextID = (_current + 1) % _pointCount;
-                var _currentToPre = m_points[_preID].getValue() - m_points[_currentID].getValue();
+                var _preToCurrent = m_points[_currentID].getValue() - m_points[_preID].getValue();
                 var _currentToNext = m_points[_nextID].getValue() - m_points[_currentID].getValue();
-                float _crossV = Cross(_currentToNext, _currentToPre);
+                float _crossV = Cross(_preToCurrent,_currentToNext);
                 if (Mathf.Abs(_crossV) > 0.001f)
                 {
                     _dirNow = _crossV > 0 ? 1 : -1;
@@ -89,9 +89,9 @@ namespace SweepLine
                 int _currentID = _current % _pointCount;
                 int _preID = (_current - 1 + _pointCount) % _pointCount;
                 int _nextID = (_current + 1) % _pointCount;
-                var _currentToPre = m_points[_preID].getValue() - m_points[_currentID].getValue();
+                var _preToCurrent = m_points[_currentID].getValue() - m_points[_preID].getValue();
                 var _currentToNext = m_points[_nextID].getValue() - m_points[_currentID].getValue();
-                float _crossV = Cross(_currentToNext, _currentToPre);
+                float _crossV = Cross(_preToCurrent,_currentToNext);
                 if (Mathf.Abs(_crossV) > 0.001f)
                 {
                     _dirNow = _crossV > 0 ? 1 : -1;
@@ -108,8 +108,14 @@ namespace SweepLine
 
                 _totalDis += _disCurrent;
             }
-            var _loopDir = _positiveDis > _negativeDis ? LoopDir.CounterClockwise : LoopDir.Clockwise;
+            var _loopDir = _positiveDis > _negativeDis ? LoopDir.Counterclockwise : LoopDir.Clockwise;
             return _loopDir;
+        }
+
+        public SimplePolygon MakeSimple()
+        {
+            //todo:....
+            return this;
         }
 
         public void ValidateLoop()

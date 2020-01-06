@@ -30,8 +30,17 @@ namespace SweepLine
 				}
             }
         }
-
-
+        private void CheckAddRegion(SlopeRegion _region)
+        {
+             if(_region.m_slope!=float.MaxValue)
+            {
+                m_sweepRegions.Add(_region);
+            }
+            else
+            {
+                SlopeRegion.Pool.GiveBack(_region);
+            }
+        }
 
         public void SetSweepTo(float x)
         {
@@ -57,11 +66,11 @@ namespace SweepLine
         {
             SlopeRegion _regionHi = SlopeRegion.Pool.Take.SetValue(_site, _site.m_left);
             var _toLeft = _site.m_left.getValue() - _site.getValue();
-            _regionHi.m_slop = SlopeOf(_toLeft);
+            _regionHi.m_slope = SlopeOf(_toLeft);
 
             SlopeRegion _regionLow = SlopeRegion.Pool.Take.SetValue(_site, _site.m_right);
             var _toRight = _site.m_right.getValue() - _site.getValue();
-            _regionLow.m_slop = SlopeOf(_toRight);
+            _regionLow.m_slope = SlopeOf(_toRight);
 
             if (_toLeft.y < _toRight.y)
             {
@@ -69,11 +78,10 @@ namespace SweepLine
                 _regionHi = _regionLow;
                 _regionLow = _temp;
             }
-            m_sweepRegions.Add(_regionHi);
-            m_sweepRegions.Add(_regionLow);
+            CheckAddRegion(_regionHi);
+            CheckAddRegion(_regionLow);
             SetSweepTo(_site.x);
         }
-
 
         public void TurnSite(Point2 _site)
         {
@@ -87,10 +95,10 @@ namespace SweepLine
                 _right = _site.m_left;
             }
             RemoveEndwith(_site);
-            SlopeRegion _region = SlopeRegion.Pool.Take.SetValue(_site, _right);
             var _toRight = _right.getValue() - _site.getValue();
-            _region.m_slop = SlopeOf(_toRight);
-            m_sweepRegions.Add(_region);
+            SlopeRegion _region = SlopeRegion.Pool.Take.SetValue(_site, _right);
+            _region.m_slope = SlopeOf(_toRight);
+            CheckAddRegion(_region);
             SetSweepTo(_site.x);
         }
 
