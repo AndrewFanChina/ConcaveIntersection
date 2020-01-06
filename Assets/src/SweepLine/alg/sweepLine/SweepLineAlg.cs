@@ -6,8 +6,8 @@ namespace SweepLine
     public class SweepLineAlg
     {
         protected SortableList<Point2> m_rowPoints = new SortableList<Point2>();
-        protected SweepLine m_sweepLine0=new SweepLine();
-        protected SweepLine m_sweepLine1=new SweepLine();
+        protected SweepLine m_sweepLine0 = new SweepLine();
+        protected SweepLine m_sweepLine1 = new SweepLine();
         public bool ContainsPoint(List<Point2> _polygon, Point2 _target)
         {
             int len = _polygon.Count;
@@ -28,7 +28,7 @@ namespace SweepLine
                 Point2 _pI = m_rowPoints[i];
                 if (_pI == _target)
                 {
-                    _result = m_sweepLine0.InoutOf(_target)==InOut.In;
+                    _result = m_sweepLine0.InoutOf(_target) == InOut.In;
                     break;
                 }
 
@@ -83,13 +83,13 @@ namespace SweepLine
             for (int i = 0; i < _bufLen; i++)
             {
                 Point2 _pI = m_rowPoints[i];
-                var _sweepLineCheck=_pI.m_polygonFlag == 0?m_sweepLine1:m_sweepLine0;
-                if(_sweepLineCheck.InoutOf(_pI)==InOut.In)//TODO:polygon's loop order
+                var _sweepLineCheck = _pI.m_polygonFlag == 0 ? m_sweepLine1 : m_sweepLine0;
+                if (_sweepLineCheck.InoutOf(_pI) == InOut.In)//TODO:polygon's loop order
                 {
-                    _result=true;
+                    _result = true;
                     break;
                 }
-                var _sweepLineStep=_pI.m_polygonFlag == 0?m_sweepLine0:m_sweepLine1;
+                var _sweepLineStep = _pI.m_polygonFlag == 0 ? m_sweepLine0 : m_sweepLine1;
                 Point2 _pIL = _pI.m_left;
                 Point2 _pIR = _pI.m_right;
                 Vector2 _pIV = _pI.getValue();
