@@ -39,15 +39,15 @@ namespace SweepLine
                 Vector2 _toRight = _pIR.getValue() - _pIV;
                 if (_toLeft.x > 0 && _toRight.x > 0)      //Open Site,add double slope
                 {
-                    m_sweepLine0.OpenSite(_pI);
+                    m_sweepLine0.OpenRegion(_pI);
                 }
                 else if (_toLeft.x < 0 && _toRight.x < 0) //Close Site,remove double slopes
                 {
-                    m_sweepLine0.CloseSite(_pI, _toLeft, _toRight);
+                    m_sweepLine0.CloseRegion(_pI, _toLeft, _toRight);
                 }
                 else //Turn Site,add single slope
                 {
-                    m_sweepLine0.TurnSite(_pI);
+                    m_sweepLine0.TurnReion(_pI);
                 }
             }
 
@@ -101,15 +101,15 @@ namespace SweepLine
                 Vector2 _toRight = _pIR.getValue() - _pIV;
                 if (_toLeft.x > 0 && _toRight.x > 0)      //Open Site,add double slope
                 {
-                    _sweepLineStep.OpenSite(_pI);
+                    _sweepLineStep.OpenRegion(_pI);
                 }
                 else if (_toLeft.x < 0 && _toRight.x < 0) //Close Site,remove double slopes
                 {
-                    _sweepLineStep.CloseSite(_pI, _toLeft, _toRight);
+                    _sweepLineStep.CloseRegion(_pI, _toLeft, _toRight);
                 }
                 else //Turn Site,add single slope
                 {
-                    _sweepLineStep.TurnSite(_pI);
+                    _sweepLineStep.TurnReion(_pI);
                 }
             }
 

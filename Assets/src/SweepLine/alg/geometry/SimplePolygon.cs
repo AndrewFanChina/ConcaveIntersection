@@ -48,17 +48,18 @@ namespace SweepLine
         {
             int len = m_points.Count;
             int _halfLen = (len-1) / 2;
-            for (int i = 1; i < _halfLen; i++)
+            for (int i = 0; i < _halfLen; i++)
             {
+                var _front = i + 1;
                 var _back=len - 1 - i;
                 
                 var _temp = m_points[_back];
-                m_points[_back] = m_points[i];
-                m_points[i] = _temp;
+                m_points[_back] = m_points[_front];
+                m_points[_front] = _temp;
 
                 var _temp2 = m_localPoints[_back];
-                m_localPoints[_back] = m_localPoints[i];
-                m_localPoints[i] = _temp2;
+                m_localPoints[_back] = m_localPoints[_front];
+                m_localPoints[_front] = _temp2;
             }
             return this;
         }
@@ -69,51 +70,23 @@ namespace SweepLine
         public LoopDir CalculateLoopDir()
         {
             int _pointCount = m_points.Count;
-            int _dirNow = 0;
-            int _current = 0;
-            float _positiveDis = 0;
-            float _negativeDis = 0;
-            float _totalDis = 0;
-            for (int i = 0; i < _pointCount; i++, _current++)
+            float _maxX=float.MinValue;
+            int _maxID=-1;
+            for (int i = 0; i < _pointCount; i++)
             {
-                int _currentID = _current % _pointCount;
-                int _preID = (_current - 1 + _pointCount) % _pointCount;
-                int _nextID = (_current + 1) % _pointCount;
-                var _preToCurrent = m_points[_currentID].getValue() - m_points[_preID].getValue();
-                var _currentToNext = m_points[_nextID].getValue() - m_points[_currentID].getValue();
-                float _crossV = Cross(_preToCurrent,_currentToNext);
-                if (Mathf.Abs(_crossV) > 0.001f)
+                if(m_points[i].x>_maxX)
                 {
-                    _dirNow = _crossV > 0 ? 1 : -1;
-                    _current = i;
-                    break;
+                    _maxX=m_points[i].x;
+                    _maxID=i;
                 }
             }
-            for (int i = 0; i < _pointCount; i++, _current++)
-            {
-                int _currentID = _current % _pointCount;
-                int _preID = (_current - 1 + _pointCount) % _pointCount;
-                int _nextID = (_current + 1) % _pointCount;
-                var _preToCurrent = m_points[_currentID].getValue() - m_points[_preID].getValue();
-                var _currentToNext = m_points[_nextID].getValue() - m_points[_currentID].getValue();
-                float _crossV = Cross(_preToCurrent,_currentToNext);
-                if (Mathf.Abs(_crossV) > 0.001f)
-                {
-                    _dirNow = _crossV > 0 ? 1 : -1;
-                }
-                float _disCurrent = _currentToNext.magnitude;
-                if (_dirNow > 0)
-                {
-                    _positiveDis += _disCurrent;
-                }
-                else
-                {
-                    _negativeDis += _disCurrent;
-                }
 
-                _totalDis += _disCurrent;
-            }
-            var _loopDir = _positiveDis > _negativeDis ? LoopDir.Counterclockwise : LoopDir.Clockwise;
+            int _preID = (_maxID - 1 + _pointCount) % _pointCount;
+            int _nextID = (_maxID + 1) % _pointCount;
+            var _preToCurrent = m_points[_maxID].getValue() - m_points[_preID].getValue();
+            var _currentToNext = m_points[_nextID].getValue() - m_points[_maxID].getValue();
+            float _crossV = Cross(_preToCurrent, _currentToNext);
+            var _loopDir = _crossV > 0 ? LoopDir.Counterclockwise : LoopDir.Clockwise;
             return _loopDir;
         }
 

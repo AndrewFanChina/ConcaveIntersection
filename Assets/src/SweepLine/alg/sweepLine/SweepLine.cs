@@ -62,7 +62,7 @@ namespace SweepLine
             return InOut.Out;
         }
 
-        public void OpenSite(Point2 _site)
+        public void OpenRegion(Point2 _site)
         {
             SlopeRegion _regionHi = SlopeRegion.Pool.Take.SetValue(_site, _site.m_left);
             var _toLeft = _site.m_left.getValue() - _site.getValue();
@@ -83,7 +83,7 @@ namespace SweepLine
             SetSweepTo(_site.x);
         }
 
-        public void TurnSite(Point2 _site)
+        public void TurnReion(Point2 _site)
         {
             Point2 _right;
             if (_site.m_right.x > _site.m_left.x)
@@ -102,7 +102,7 @@ namespace SweepLine
             SetSweepTo(_site.x);
         }
 
-        public void CloseSite(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
+        public void CloseRegion(Point2 _site, Vector2 _toLeft, Vector2 _toRight)
         {
             RemoveEndwith(_site);
         }
