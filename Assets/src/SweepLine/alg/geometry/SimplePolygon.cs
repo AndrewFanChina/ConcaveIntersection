@@ -33,7 +33,12 @@ namespace SweepLine
             }
             m_points.Clear();
         }
-
+        public void RemovePointAt(int _id)
+        {
+            m_localPoints.RemoveAt(_id);
+            Point2.Pool.GiveBack(m_points[_id]);
+            m_points.RemoveAt(_id);
+        }
         public void AddPoint(Vector2 _point)
         {
             m_localPoints.Add(_point);
@@ -114,8 +119,42 @@ namespace SweepLine
 
         public SimplePolygon MakeSimple()
         {
-            //todo:....
+            int _pointCount = m_points.Count;
+            for (int i = 3; i < _pointCount; i++)
+            {
+                for (int j = 0; j < i-2; j++)
+                {
+                    int _p0ID = (i - 1 + _pointCount) % _pointCount;
+                    int _p1ID = i;
+                    int _p2ID = (j) % _pointCount;;
+                    var _p3ID = (j+1) % _pointCount;;
+                    var _p0=m_points[_p0ID].getValue();
+                    var _p1=m_points[_p1ID].getValue();
+                    var _p2=m_points[_p2ID].getValue();
+                    var _p3=m_points[_p3ID].getValue();
+                    if(SegmenetCross(_p0,_p1,_p2,_p3))
+                    {
+                        RemovePointAt(i);
+                        i--;
+                        _pointCount--;
+                        break;
+                    }
+                }
+            }
             return this;
+        }
+        public static bool SegmenetCross(Vector2 _p0,Vector2 _p1,Vector2 _p2,Vector2 _p3)
+        {
+            var _p01=_p1-_p0;
+            var _p02=_p2-_p0;
+            var _p03=_p3-_p0;
+
+            var _p23=_p3-_p2;
+            var _p20=_p0-_p2;
+            var _p21=_p1-_p2;
+            float _value1 = Cross(_p01,_p02)*Cross(_p01,_p03);
+            float _value2 =  Cross(_p23,_p20)*Cross(_p23,_p21);
+            return _value1<=0 && _value2<=0;
         }
 
         public void ValidateLoop()
