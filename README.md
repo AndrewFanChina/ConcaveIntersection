@@ -34,6 +34,7 @@
 
 ---
 
+```
 public class Point2
 {
     public float x;
@@ -54,6 +55,7 @@ public class SlopeRegion
         public float m_swY;       //扫描线Y坐标
         public InOut m_inOut;     //区域内外
 }
+```
 
 ---
 
