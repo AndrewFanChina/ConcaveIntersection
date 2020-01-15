@@ -32,6 +32,8 @@
 6、需要一个区域栈(RegionList)，虽然类似栈结构，但是不需要应用先进后出的规则，只需用List存储即可
 大概主要结构单元如下：
 
+---
+
 public class Point2
 {
     public float x;
@@ -52,6 +54,9 @@ public class SlopeRegion
         public float m_swY;       //扫描线Y坐标
         public InOut m_inOut;     //区域内外
 }
+
+---
+
 四、事件定义与扫描规则
 为了更方便执行扫描过程中的处理，我们可以参考Voronoi图和扫线法中的做法，将遭遇的不同类型的扫描结果使用不同的事件来表示，这里我们可以使用三种类型的事件：
 1、OpenRegion（开启区域）
